@@ -1,0 +1,4141 @@
+<!DOCTYPE html> <!-- Version of HTML -->
+
+<!--
+
+-->
+
+<!-- HTML Tag - Starts Code -->
+<html>
+	<!-- Head Tag - Setup and Styling -->
+    <head>
+    	<!-- Meta Tag - Webpage Setup -->
+        <meta charset = "utf-8">
+        
+        <!-- Title Tag - Title -->
+        <title>TD</title>
+		
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Annie+Use+Your+Telescope&family=Architects+Daughter&family=Covered+By+Your+Grace&family=Gochi+Hand&family=Indie+Flower&family=Mali:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Patrick+Hand&family=Rock+Salt&family=Schoolbell&family=Shadows+Into+Light&family=Shadows+Into+Light+Two&family=Short+Stack&family=Swanky+and+Moo+Moo&family=Waiting+for+the+Sunrise&display=swap" rel="stylesheet">
+        
+        <!-- Style Tag - CSS -->
+        <style>
+            body {
+                margin: 0px 0px 0px 0px;
+                overflow: hidden;
+				text-align: center;
+            }
+            
+            #my-canvas {
+                position: absolute;
+				top: 0px;
+				left: 0px;
+				outline: none;
+            }
+        </style>
+    </head>
+    
+    <!-- Body Tag - Webpage Content -->
+    <body>
+		<!-- Canvas Tag - To Draw All Shapes -->
+		<canvas id = "my-canvas" width = "800" height = "800"></canvas>
+		
+		<!-- Script Tag - Processing JS (https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js) -->
+		<script src = "https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script>
+		
+		<!-- Script Tag - Outlined Text -->
+		<script>
+			var cnvs = document.getElementById("my-canvas");
+			var ctxx = cnvs.getContext("2d");
+			
+			function ot(msg, x, y, col1, col2) {
+				ctxx.fillStyle = "rgba(" + String(col1[0]) + ", " + String(col1[1]) + ", " + String(col1[2]) + ", " + String(col1[3] / 255) + ")";
+				ctxx.strokeStyle = "rgba(" + String(col2[0]) + ", " + String(col2[1]) + ", " + String(col2[2]) + ", " + String(col2[3] / 255) + ")";
+				ctxx.textAlign = "center";
+				ctxx.textBaseline = "middle";
+				ctxx.fillText(msg, x, y);
+				ctxx.strokeText(msg, x, y);
+			}
+			
+			function textfont(font, size, mode) {
+				if (font === undefined) {
+					font = "arial";
+				}
+				if (arguments.length === 1) {
+					ctxx.font = String(size) + "px";
+				} else if (arguments.length === 2) {
+					ctxx.font = String(size) + "px " + font;
+				} else if (arguments.length === 3) {
+					ctxx.font = mode + " " + String(size) + "px " + font;
+				}
+			}
+		</script>
+		
+		<!-- Script Tag - Game -->
+		<script type = "application/javascript">
+		    // program code {
+    		    var sketchProc = function(processingInstance) {
+    		        with (processingInstance) {
+    		        	// setup {
+	    		        	size(1000, 800);
+					        frameRate(60);
+					        rectMode(CENTER);
+						    ellipseMode(CENTER);
+						    textAlign(CENTER, CENTER);
+						    imageMode(CENTER);
+						    noStroke();	
+				        // }
+				        // variables {
+				        	var scene = "logo"; // scene
+				        	
+				        	var clicked = false; // is the mouse pressed?
+				        	
+				        	var input = []; // keep track of key presses
+				        	var keys = []; // keep track of key presses
+							
+							// {
+								var enemies = [];
+								var towers = [];
+								var bullets = [];
+								var onwards = [];
+								var particles = [];
+								var buttons = [];
+								var transitions = [];
+							// } class arrays
+							
+							var tMouse = {
+								tower: null,
+								canPlace: false,
+							}; // to store tower placement info
+							
+							var selected = false; // has a tower been selected
+							
+							var mone = 2000; // mone
+							
+							var track = [
+								{
+									x: -50,
+									y: -50,
+								}, {
+									x: 80,
+									y: 80,
+								}, {
+									x: 850,
+									y: 80,
+								}, {
+									x: 850,
+									y: 200,
+								}, {
+									x: 550,
+									y: 350,
+								}, {
+									x: 250,
+									y: 250,
+								}, {
+									x: 120,
+									y: 500,
+								}, {
+									x: 200,
+									y: 570,
+								}, {
+									x: 400,
+									y: 550,
+								}, {
+									x: 600,
+									y: 650,
+								}, {
+									x: 800,
+									y: 450,
+								}, {
+									x: 1100,
+									y: 800,
+								},
+							];
+							
+							var dashY = 200;
+							
+							var anims = [];
+							var nailImgs = [];
+							
+							var onWav = false;
+							var countWav = 0;
+							var wave = 0;
+							
+							var healthLeft = 100;
+							
+							var titleWord = "Fish TD";
+				        // }
+				        // collision functions {
+				        	function rectToRect(x1, y1, w1, h1, x2, y2, w2, h2) {
+				        		return x1 + w1 / 2 > x2 - w2 / 2 && 
+						            x1 - w1 / 2 < x2 + w2 / 2 && 
+						            y1 + h1 / 2 > y2 - h2 / 2 && 
+						            y1 - h1 / 2 < y2 + h2 / 2;
+				        	} // rect to rect collision
+				        	
+				        	function pointToRect(px, py, rx, ry, rw, rh) {
+				        		return px > rx - rw / 2 && 
+						            px < rx + rw / 2 && 
+						            py > ry - rh / 2 && 
+						            py < ry + rh / 2;
+				        	} // point to rect collision
+							
+							function lineToLine(x1, y1, x2, y2, x3, y3, x4, y4) {
+								let slope1 = (y2 - y1) / (x2 - x1); // slope
+								let slope2 = (y4 - y3) / (x4 - x3); // slope
+								
+								let yInt1 = y1 - slope1 * x1; // y intercept
+								let yInt2 = y3 - slope2 * x3; // y intercept
+								
+								let xCoInt = (yInt2 - yInt1) / (slope1 - slope2); // x coordinate of intersection
+								
+								return slope1 !== slope2 && ((x1 < x2) ? (xCoInt > x1 && xCoInt < x2) : (xCoInt > x2 && xCoInt < x1)) && ((x3 < x4) ? (xCoInt > x3 && xCoInt < x4) : (xCoInt > x4 && xCoInt < x3));
+							} // line to line collision
+							
+							function circleToLine(cx, cy, cr, lx1, ly1, lx2, ly2) {
+								let x1 = min(lx1, lx2);
+								let x2 = max(lx1, lx2);
+								let y1 = (min(lx1, lx2) === lx1) ? ly1 : ly2;
+								let y2 = (max(lx1, lx2) === lx2) ? ly2 : ly1;
+								
+								let slope = (y2 - y1) / (x2 - x1); // get the slope
+								
+								let yInt = y1 - (slope * x1); // get the y intercept
+								
+								let a; // formula values
+								let b; // formula values
+								let c; // formula values
+								
+								if (slope < 0) { // if the slope is negative
+									a = abs(slope);
+									b = 1;
+									c = -yInt;
+									
+								} else if (slope >= 0) { // or if its not negative
+									a = slope;
+									b = -1;
+									c = yInt;
+								}
+								
+								let x = cx; // circle x
+								let y = cy; // circle y
+								
+								return floor(abs(a * x + b * y + c) / sqrt(sq(a) + sq(b))) <= floor(cr) && ((floor(cx) < floor(x2) && floor(cx) >= floor(x1)) || floor(dist(lx1, ly1, cx, cy)) < floor(cr) || floor(dist(lx2, ly2, cx, cy)) < floor(cr));
+							} // circle to line collision
+							
+							function circleToRect(cx, cy, cr, rx, ry, rw, rh) {
+								return dist(cx, cy, rx - rw / 2, ry - rh / 2) < cr || 
+									dist(cx, cy, rx - rw / 2, ry + rh / 2) < cr || 
+									dist(cx, cy, rx + rw / 2, ry - rh / 2) < cr || 
+									dist(cx, cy, rx + rw / 2, ry + rh / 2) < cr || 
+									((abs((rx - rw / 2) - cx) <= cr || abs((rx + rw / 2) - cx) <= cr) && (cy >= ry - rh / 2 && cy <= ry + rh / 2)) || 
+									((abs((ry - rh / 2) - cy) <= cr || abs((ry + rh / 2) - cy) <= cr) && (cx >= rx - rw / 2 && cx <= rx + rw / 2)) || 
+									(cx >= rx - rw / 2 && cx <= rx + rw / 2 && cy >= ry - rh / 2 && cy <= ry + rh / 2);
+							} // circle to rect
+							
+							function pointLineDist(px, py, lx1, ly1, lx2, ly2) {
+								var x1 = min(lx1, lx2);
+								var x2 = max(lx1, lx2);
+								var y1 = (x1 === lx1) ? ly1 : ly2;
+								var y2 = (x2 === lx2) ? ly2 : ly1;
+								
+								var slope = (y2 - y1) / (x2 - x1);
+								var yint = y1 - (slope * x1);
+								
+								var intx = ((py * slope) + px - (slope * yint)) / (sq(slope) + 1);
+								var inty = (slope * intx) + yint;
+								
+								if (intx > x1 && intx < x2) {
+									return {
+										dist: dist(px, py, intx, inty),
+										point: {
+											x: intx,
+											y: inty,
+										},
+									};
+								} else {
+									var dist1 = dist(px, py, x1, y1);
+									var dist2 = dist(px, py, x2, y2);
+									
+									if (dist1 < dist2) {
+										return {
+											dist: dist1,
+											point: {
+												x: x1,
+												y: y1,
+											},
+										};
+									} else if (dist1 > dist2) {
+										return {
+											dist: dist2,
+											point: {
+												x: x2,
+												y: y2,
+											},
+										};
+									}
+								}
+							}
+							
+							function pointToEllipse(px, py, ex, ey, ew, eh) {
+								return sq(px - ex) / sq(ew / 2) + sq(py - ey) / sq(eh / 2) <= 1;
+							} // point to ellipse collision
+							
+							
+						// }
+				        // graphics {
+							function or(x, y, w, h) {
+								var thign = y - h / 2;
+								rect(x, thign, w, h);
+							} // other rect
+							
+				        	// {
+								var customEllipse = function(x, y, w, h, r) {
+									pushMatrix();
+										translate(x, y);
+										rotate(radians(r));
+										ellipse(0, 0, w, h);
+									popMatrix();
+								};
+
+								stroke(0);
+								strokeWeight(1);
+
+								// masking
+								//{
+								background(255, 186, 25);
+								noFill();
+								for (var i = 3; i < 21; i++) {
+									arc(25 * i + 17, 152, 25, 36, radians(180), radians(360));
+									arc(22 * i + 6, 168, 21, 32, radians(180), radians(360));
+									arc(16 * i, 180, 15, 26, radians(180), radians(360));
+									arc(16 * i + 9, 193, 15, 26, radians(180), radians(360));
+									arc(16 * i + 3, 206, 15, 26, radians(180), radians(360));
+									arc(16 * i + 11, 219, 15, 26, radians(180), radians(360));
+									arc(16 * i + 19, 232, 15, 26, radians(180), radians(360));
+									arc(12 * i + 58, 243, 12, 23, radians(180), radians(360));
+									arc(12 * i + 64, 254, 12, 23, radians(180), radians(360));
+									arc(12 * i + 57, 266, 12, 23, radians(180), radians(360));
+									arc(12 * i + 63, 277, 12, 23, radians(180), radians(360));
+									arc(9 * i + 82, 285, 9, 17, radians(180), radians(360));
+									arc(9 * i + 86, 293, 9, 17, radians(180), radians(360));
+									arc(9 * i + 90, 301, 9, 17, radians(180), radians(360));
+									arc(9 * i + 87, 310, 9, 17, radians(180), radians(360));
+									arc(7 * i + 94, 317, 6, 14, radians(180), radians(360));
+									arc(7 * i + 96, 323, 6, 14, radians(180), radians(360));
+								}
+								
+								// eyes
+
+								fill(255);
+								customEllipse(167, 123, 23, 37, 16);
+								customEllipse(218, 123, 23, 37, -16);
+								fill(0);
+								customEllipse(167, 123, 15, 23, 16);
+								customEllipse(218, 123, 15, 23, -16);
+								
+								var fish2Texutre = get(0, 0, 400, 400);
+
+								background(0, 0, 0, 0);
+
+								fill(255, 255, 255);
+								beginShape();
+									vertex(159, 180);
+									bezierVertex(162, 159, 164, 124, 181, 99);
+									bezierVertex(203, 79, 211, 113, 213, 117);
+									bezierVertex(248, 230, 203, 299, 202, 325);
+									bezierVertex(214, 354, 203, 357, 197, 360);
+									vertex(192, 341);
+									bezierVertex(195, 354, 189, 366, 180, 382);
+									bezierVertex(160, 342, 188, 351, 188, 315);
+									bezierVertex(192, 289, 162, 276, 159, 195);
+								endShape();
+
+								var fish2Shape = get(0, 0, 400, 400);
+
+								//////////////////////////////////////////////////////
+
+								background(111, 171, 217);
+
+								// gradient
+								for (var i = 0; i < 34; i++) {
+									noStroke();
+									fill(47, 56, 122, 30 - i);
+									ellipse(192 - 84, 126 + 10, 12 * i, 20 * i);
+								}
+
+								// snow or what not
+								for (var i = 0; i < 605; i++) {
+									strokeWeight(random(1, 5));
+									stroke(255, random(150, 255));
+									point(random(0, 400), random(0, 400));
+								}
+
+								// eyes
+								pushMatrix();
+								translate(-79, -58);
+								stroke(0);
+								fill(255);
+								strokeWeight(1);
+								customEllipse(122, 102, 57, 40, -41);
+								customEllipse(259, 102, 57, 40, 41);
+
+								fill(0);
+								customEllipse(122, 102, 39, 29, -41);
+								customEllipse(259, 102, 39, 29, 41);
+								popMatrix();
+
+
+								var fish4Texture = get(0, 0, 222, 327);
+
+								background(0, 0);
+								stroke(0);
+								strokeWeight(1);
+								fill(255);
+
+								pushMatrix();
+									translate(-84, -98);
+									scale(0.80);
+									beginShape();
+										vertex(242, 125);
+										bezierVertex(292, 132, 365, 196, 337, 294);
+										bezierVertex(367, 296, 388, 317, 379, 333);
+										bezierVertex(360, 375, 335, 412, 320, 335);
+										bezierVertex(267, 469, 267, 420, 261, 462);
+										bezierVertex(306, 510, 303, 520, 285, 524);
+										bezierVertex(204, 521, 242, 529, 202, 529);
+										bezierVertex(186, 519, 211, 485, 217, 463);
+										bezierVertex(226, 438, 200, 446, 161, 346);
+										bezierVertex(146, 387, 136, 391, 108, 336);
+										bezierVertex(104, 297, 136, 317, 144, 284);
+										bezierVertex(133, 197, 189, 144, 242, 125);
+									endShape();
+								popMatrix();
+
+								var fish4Shape = get(0, 0, 222, 327);
+
+								//}
+
+								// {
+								background(0, 0, 0, 0);
+
+								pushMatrix();
+									translate(-136, -71);
+									
+									fill(51);
+									
+									// left fin
+									beginShape();
+										vertex(138, 225);
+										bezierVertex(144, 160, 173, 143, 165, 152);
+										vertex(177, 173);
+										bezierVertex(151, 197, 157, 192, 138, 225);
+									endShape();
+									
+									// right fin
+									beginShape();
+										vertex(216, 146);
+										bezierVertex(251, 170, 252, 204, 256, 220);
+										bezierVertex(238, 187, 228, 178, 216, 179);
+									endShape();
+									
+									// under fin
+									beginShape();
+										vertex(178, 280);
+										bezierVertex(189, 272, 196, 282, 203, 292);
+										vertex(194, 252);
+										bezierVertex(175, 267, 175, 282, 178, 280);
+									endShape();
+									
+									// body
+									fill(81);
+									beginShape();
+										vertex(163, 151);
+										bezierVertex(161, 95, 178, 69, 191, 73);
+										bezierVertex(212, 80, 220, 142, 221, 147);
+										vertex(221, 177);
+										bezierVertex(227, 256, 223, 259, 215, 306);
+										bezierVertex(214, 347, 217, 341, 215, 347);
+										bezierVertex(200, 316, 203, 341, 218, 383);
+										bezierVertex(198, 350, 198, 347, 196, 362);
+										bezierVertex(190, 341, 205, 347, 196, 296);
+										bezierVertex(187, 253, 183, 241, 177, 217);
+										bezierVertex(171, 196, 165, 175, 163, 152);
+									endShape(CLOSE);
+									
+									// top fin
+									fill(51);
+									beginShape();
+										vertex(208, 259);
+										bezierVertex(218, 253, 232, 265, 228, 257);
+										bezierVertex(228, 253, 229, 255, 204, 202);
+									endShape();
+									
+									fill(0);
+									customEllipse(207, 101, 7, 14, -10);
+									customEllipse(171, 101, 7, 14, 9);
+									
+									fill(255);
+									ellipse(207, 99, 6, 5);
+									ellipse(171, 99, 6, 5);
+								popMatrix();
+
+								var sharkImg = get(0, 0, 121, 313);
+								//}
+								
+								if (fish2Texutre) {
+									fish2Texutre.mask(fish2Shape);
+								}
+
+								// {
+								background(0, 0, 0, 0);
+
+								pushMatrix();
+									translate(-139, -91);
+									
+									fill(51);
+									
+									// {
+								fill(255, 177, 87);
+
+								// left fin
+								beginShape();
+									vertex(168, 142);
+									bezierVertex(132, 212, 140, 217, 149, 229);
+									bezierVertex(154, 218, 156, 215, 173, 229);
+								endShape();
+
+								// right fin
+								beginShape();
+									vertex(215, 142);
+									bezierVertex(259, 223, 241, 217, 236, 229);
+									bezierVertex(233, 218, 222, 215, 216, 229);
+								endShape();
+
+								noFill();
+								bezier(150, 227, 145, 210, 150, 204, 152, 198);
+								bezier(238, 227, 238, 210, 235, 204, 231, 198);
+
+								image(fish2Texutre, 200, 200, 400, 400);
+
+								// outline
+								beginShape();
+									vertex(159, 180);
+									bezierVertex(162, 159, 164, 124, 181, 99);
+									bezierVertex(203, 79, 211, 113, 213, 117);
+									bezierVertex(248, 230, 203, 299, 202, 325);
+									bezierVertex(214, 354, 203, 357, 197, 360);
+									vertex(192, 341);
+									bezierVertex(195, 354, 189, 366, 180, 382);
+									bezierVertex(160, 342, 188, 351, 188, 315);
+									bezierVertex(192, 289, 162, 276, 159, 195);
+								endShape(CLOSE);
+
+
+								// }
+								popMatrix();
+
+								var goldyImg = get(0, 0, 107, 292);	
+								// }
+
+								// {
+								background(0, 0, 0, 0);
+
+								pushMatrix();
+									translate(-45, -48);
+									
+									fill(123, 176, 184);
+								beginShape();
+									vertex(83, 125);
+									bezierVertex(62, 134, 49, 172, 46, 194);
+									vertex(79, 192);
+								endShape();
+
+								beginShape();
+									vertex(241, 125);
+									bezierVertex(253, 134, 269, 172, 273, 194);
+									vertex(231, 192);
+								endShape();
+
+								fill(132, 177, 194);
+								beginShape();
+									vertex(71, 200);
+									bezierVertex(70, 92, 99, 81, 137, 56);
+									bezierVertex(178, 41, 188, 53, 227, 82);
+									bezierVertex(269, 107, 242, 240, 219, 274);
+									bezierVertex(184, 324, 184, 304, 178, 336);
+									bezierVertex(176, 338, 206, 346, 202, 359);
+									bezierVertex(162, 356, 151, 355, 120, 359);
+									bezierVertex(121, 349, 131, 346, 145, 336);
+									bezierVertex(140, 294, 109, 319, 79, 238);
+									bezierVertex(74, 215, 76, 228, 71, 200);
+								endShape(CLOSE);
+
+								beginShape();
+									vertex(147, 180);
+									bezierVertex(151, 179, 142, 192, 142, 200);
+									vertex(152, 199);
+									bezierVertex(149, 202, 142, 225, 138, 236);
+									bezierVertex(149, 226, 162, 229, 161, 225);
+								endShape();
+
+								fill(255);
+
+								pushMatrix();
+									translate(225, 84);
+									rotate(radians(34));
+									
+									fill(255);
+									arc(0, 0, 34, 23, radians(2), radians(193));
+									
+									fill(0);
+									arc(0, -1, 27, 14, radians(2), radians(193));
+								popMatrix();
+
+								pushMatrix();
+									translate(102, 84);
+									rotate(radians(-48));
+									
+									fill(255);
+									arc(0, 0, 34, 23, radians(0), radians(185));
+									
+									fill(0);
+									arc(0, -1, 27, 14, radians(0), radians(185));
+								popMatrix();
+								popMatrix();
+
+								var fatImg = get(0, 0, 229, 313);	
+								// }
+
+								// {
+								if (fish4Texture) {
+									fish4Texture.mask(fish4Shape);
+								}	
+								noStroke();
+								// }
+							// } nitowl stoughs
+							
+							// {
+								imageMode(CORNER);
+								stroke(0, 0, 0);
+								strokeWeight(1);
+								
+								var seaweed = (function() {
+									background(0, 0);
+									fill(70, 171, 149);
+									beginShape();
+										vertex(317, 364);
+										bezierVertex(336, 329, 344, 314, 336, 261);
+										bezierVertex(352, 283, 357, 327, 338, 344);
+									endShape();
+									
+									fill(81, 196, 72);
+									beginShape();
+										vertex(319, 363);
+										bezierVertex(352, 329, 358, 305, 386, 321);
+										bezierVertex(364, 319, 370, 324, 318, 382);
+									endShape();
+									
+									fill(44, 161, 116);
+									beginShape();
+										vertex(314, 381);
+										bezierVertex(337, 362, 349, 361, 363, 368);
+										bezierVertex(351, 371, 349, 363, 306, 403);
+									endShape();
+									
+									fill(9, 117, 95);
+									beginShape();
+										vertex(277, 483);
+										bezierVertex(273, 379, 331, 396, 312, 319);
+										bezierVertex(350, 379, 295, 399, 294, 486);
+									endShape();
+									
+									fill(20, 135, 91);
+									beginShape();
+										vertex(450, 499);
+										bezierVertex(492, 440, 534, 453, 537, 454);
+										bezierVertex(487, 463, 492, 503, 434, 533);
+									endShape();
+									
+									fill(87, 212, 121);
+									beginShape();
+										vertex(373, 559);
+										bezierVertex(427, 507, 420, 428, 374, 368);
+										bezierVertex(456, 443, 446, 547, 367, 573);
+									endShape();
+									
+									fill(75, 153, 92);
+									beginShape();
+										vertex(392, 555);
+										bezierVertex(425, 531, 453, 503, 439, 451);
+										bezierVertex(429, 388, 483, 428, 448, 332);
+										bezierVertex(470, 350, 485, 389, 455, 434);
+										bezierVertex(445, 492, 484, 496, 423, 547);
+									endShape();
+									
+									fill(63, 145, 51);
+									beginShape();
+										vertex(365, 570);
+										bezierVertex(420, 531, 466, 527, 484, 596);
+										bezierVertex(429, 542, 449, 554, 353, 584);
+									endShape();
+									
+									fill(84, 143, 129);
+									beginShape();
+										vertex(324, 618);
+										bezierVertex(357, 566, 380, 540, 365, 489);
+										bezierVertex(337, 441, 323, 448, 321, 396);
+										bezierVertex(342, 455, 367, 448, 380, 476);
+										bezierVertex(392, 495, 398, 544, 349, 606);
+									endShape();
+									
+									fill(27, 122, 52);
+									beginShape();
+										vertex(251, 360);
+										bezierVertex(208, 384, 215, 450, 272, 495);
+										bezierVertex(319, 529, 305, 560, 290, 599);
+										vertex(311, 621);
+										bezierVertex(338, 529, 305, 499, 290, 483);
+										bezierVertex(230, 442, 228, 418, 251, 360);
+									endShape();
+									
+									fill(16, 128, 124);
+									beginShape();
+										vertex(242, 573);
+										bezierVertex(144, 497, 211, 439, 197, 415);
+										bezierVertex(227, 497, 177, 452, 256, 582);
+									endShape();
+									
+									fill(46, 140, 63);
+									beginShape();
+										vertex(255, 596);
+										bezierVertex(272, 593, 172, 509, 88, 581);
+										bezierVertex(108, 532, 186, 516, 249, 574);
+										bezierVertex(236, 556, 214, 486, 272, 441);
+										bezierVertex(261, 478, 222, 486, 281, 615);
+										vertex(261, 605);
+									endShape();
+									
+									fill(73, 148, 119);
+									beginShape();
+										vertex(310, 637);
+										bezierVertex(286, 631, 239, 576, 174, 610);
+										bezierVertex(118, 632, 109, 645, 46, 594);
+										bezierVertex(126, 620, 109, 606, 176, 578);
+										bezierVertex(240, 558, 279, 616, 297, 623);
+									endShape();
+									
+									fill(56, 163, 84);
+									beginShape();
+										vertex(289, 496);
+										bezierVertex(327, 472, 363, 449, 354, 397);
+										bezierVertex(385, 435, 352, 467, 319, 494);
+										bezierVertex(285, 529, 295, 526, 281, 563);
+										vertex(277, 521);
+									endShape(CLOSE);
+									
+									fill(128, 189, 166);
+									beginShape();
+										vertex(297, 623);
+										bezierVertex(215, 500, 330, 495, 277, 406);
+										bezierVertex(357, 479, 243, 484, 306, 618);
+										vertex(308, 633);
+									endShape(CLOSE);
+									
+									fill(93, 166, 87);
+									beginShape();
+										vertex(303, 633);
+										bezierVertex(307, 556, 330, 534, 358, 509);
+										bezierVertex(402, 487, 432, 442, 423, 417);
+										bezierVertex(435, 462, 430, 489, 381, 521);
+										bezierVertex(353, 532, 340, 554, 310, 640);
+									endShape();
+									
+									fill(56, 143, 111);
+									beginShape();
+										vertex(312, 628);
+										bezierVertex(395, 557, 418, 583, 448, 598);
+										bezierVertex(501, 626, 529, 603, 559, 601);
+										bezierVertex(501, 637, 470, 624, 414, 601);
+										bezierVertex(375, 587, 336, 619, 309, 643);
+									endShape();
+									return get();
+								})();
+								var seaweedShadow = (function() {
+									background(0, 0);
+
+									noStroke();
+									fill(0, 10);
+
+									beginShape();
+										vertex(317, 364);
+										bezierVertex(336, 329, 344, 314, 336, 261);
+										bezierVertex(352, 283, 357, 327, 338, 344);
+									endShape();
+									
+									beginShape();
+										vertex(319, 363);
+										bezierVertex(352, 329, 358, 305, 386, 321);
+										bezierVertex(364, 319, 370, 324, 318, 382);
+									endShape();
+
+									beginShape();
+										vertex(314, 381);
+										bezierVertex(337, 362, 349, 361, 363, 368);
+										bezierVertex(351, 371, 349, 363, 306, 403);
+									endShape();
+									
+									beginShape();
+										vertex(277, 483);
+										bezierVertex(273, 379, 331, 396, 312, 319);
+										bezierVertex(350, 379, 295, 399, 294, 486);
+									endShape();
+									
+									beginShape();
+										vertex(450, 499);
+										bezierVertex(492, 440, 534, 453, 537, 454);
+										bezierVertex(487, 463, 492, 503, 434, 533);
+									endShape();
+									
+									beginShape();
+										vertex(373, 559);
+										bezierVertex(427, 507, 420, 428, 374, 368);
+										bezierVertex(456, 443, 446, 547, 367, 573);
+									endShape();
+									
+									beginShape();
+										vertex(392, 555);
+										bezierVertex(425, 531, 453, 503, 439, 451);
+										bezierVertex(429, 388, 483, 428, 448, 332);
+										bezierVertex(470, 350, 485, 389, 455, 434);
+										bezierVertex(445, 492, 484, 496, 423, 547);
+									endShape();
+									
+									beginShape();
+										vertex(365, 570);
+										bezierVertex(420, 531, 466, 527, 484, 596);
+										bezierVertex(429, 542, 449, 554, 353, 584);
+									endShape();
+									
+									beginShape();
+										vertex(324, 618);
+										bezierVertex(357, 566, 380, 540, 365, 489);
+										bezierVertex(337, 441, 323, 448, 321, 396);
+										bezierVertex(342, 455, 367, 448, 380, 476);
+										bezierVertex(392, 495, 398, 544, 349, 606);
+									endShape();
+									
+									beginShape();
+										vertex(251, 360);
+										bezierVertex(208, 384, 215, 450, 272, 495);
+										bezierVertex(319, 529, 305, 560, 290, 599);
+										vertex(311, 621);
+										bezierVertex(338, 529, 305, 499, 290, 483);
+										bezierVertex(230, 442, 228, 418, 251, 360);
+									endShape();
+									
+									beginShape();
+										vertex(242, 573);
+										bezierVertex(144, 497, 211, 439, 197, 415);
+										bezierVertex(227, 497, 177, 452, 256, 582);
+									endShape();
+									
+									beginShape();
+										vertex(255, 596);
+										bezierVertex(272, 593, 172, 509, 88, 581);
+										bezierVertex(108, 532, 186, 516, 249, 574);
+										bezierVertex(236, 556, 214, 486, 272, 441);
+										bezierVertex(261, 478, 222, 486, 281, 615);
+										vertex(261, 605);
+									endShape();
+									
+									beginShape();
+										vertex(310, 637);
+										bezierVertex(286, 631, 239, 576, 174, 610);
+										bezierVertex(118, 632, 109, 645, 46, 594);
+										bezierVertex(126, 620, 109, 606, 176, 578);
+										bezierVertex(240, 558, 279, 616, 297, 623);
+									endShape();
+									
+									beginShape();
+										vertex(289, 496);
+										bezierVertex(327, 472, 363, 449, 354, 397);
+										bezierVertex(385, 435, 352, 467, 319, 494);
+										bezierVertex(285, 529, 295, 526, 281, 563);
+										vertex(277, 521);
+									endShape(CLOSE);
+									
+									beginShape();
+										vertex(297, 623);
+										bezierVertex(215, 500, 330, 495, 277, 406);
+										bezierVertex(357, 479, 243, 484, 306, 618);
+										vertex(308, 633);
+									endShape(CLOSE);
+									
+									beginShape();
+										vertex(303, 633);
+										bezierVertex(307, 556, 330, 534, 358, 509);
+										bezierVertex(402, 487, 432, 442, 423, 417);
+										bezierVertex(435, 462, 430, 489, 381, 521);
+										bezierVertex(353, 532, 340, 554, 310, 640);
+									endShape();
+									
+									beginShape();
+										vertex(312, 628);
+										bezierVertex(395, 557, 418, 583, 448, 598);
+										bezierVertex(501, 626, 529, 603, 559, 601);
+										bezierVertex(501, 637, 470, 624, 414, 601);
+										bezierVertex(375, 587, 336, 619, 309, 643);
+									endShape();
+									return get();
+								})();
+								var coral2 = (function(){
+									background(0, 0);
+									strokeJoin(ROUND);
+									strokeWeight(2);
+									stroke(163, 18, 18);
+									fill(219, 65, 65);
+									beginShape();
+										vertex(314, 481);
+										bezierVertex(287, 492, 228, 401, 179, 475);
+										bezierVertex(146, 471, 177, 458, 182, 436);
+										bezierVertex(147, 428, 65, 402, 96, 386);
+										bezierVertex(109, 380, 93, 381, 124, 397);
+										vertex(162, 411);
+										vertex(152, 383);
+										vertex(169, 388);
+										bezierVertex(183, 429, 182, 409, 248, 417);
+										bezierVertex(266, 398, 196, 384, 187, 384);
+										vertex(184, 365);
+										vertex(219, 370);
+										bezierVertex(202, 351, 167, 290, 94, 296);
+										bezierVertex(69, 262, 182, 304, 110, 242);
+										vertex(126, 239);
+										bezierVertex(160, 272, 177, 323, 185, 265);
+										vertex(200, 272);
+										bezierVertex(192, 284, 175, 319, 254, 371);
+										bezierVertex(284, 369, 257, 306, 236, 304);
+										vertex(235, 284);
+										vertex(265, 301);
+										vertex(256, 214);
+										vertex(218, 184);
+										vertex(219, 163);
+										vertex(247, 187);
+										vertex(263, 149);
+										vertex(281, 154);
+										vertex(269, 188);
+										vertex(281, 264);
+										vertex(303, 221);
+										vertex(317, 222);
+										vertex(323, 226);
+										bezierVertex(301, 296, 269, 265, 291, 363);
+										bezierVertex(305, 394, 341, 375, 300, 301);
+										vertex(312, 280);
+										vertex(328, 320);
+										bezierVertex(385, 281, 360, 227, 348, 210);
+										bezierVertex(330, 186, 342, 169, 363, 206);
+										bezierVertex(391, 251, 391, 169, 396, 178);
+										vertex(412, 186);
+										bezierVertex(409, 242, 380, 205, 377, 282);
+										bezierVertex(399, 282, 398, 251, 403, 261);
+										bezierVertex(412, 298, 376, 289, 346, 348);
+										bezierVertex(341, 428, 388, 343, 406, 316);
+										bezierVertex(449, 240, 410, 226, 441, 217);
+										bezierVertex(453, 218, 429, 272, 456, 256);
+										vertex(474, 236);
+										vertex(489, 247);
+										bezierVertex(488, 271, 444, 276, 426, 316);
+										bezierVertex(422, 354, 471, 301, 476, 316);
+										bezierVertex(465, 339, 444, 325, 386, 378);
+										bezierVertex(352, 418, 428, 434, 438, 357);
+										vertex(455, 358);
+										bezierVertex(441, 441, 506, 347, 507, 357);
+										vertex(509, 372);
+										vertex(493, 390);
+										vertex(531, 387);
+										vertex(531, 406);
+										vertex(489, 407);
+										vertex(515, 431);
+										vertex(512, 448);
+										bezierVertex(489, 449, 469, 391, 341, 481);
+									endShape(CLOSE);
+									return get();
+								})();
+								var coralShape = (function(){
+									strokeJoin(ROUND);
+									strokeWeight(5);
+									stroke(255);
+									background(0, 0, 0);
+									fill(255, 255, 255);
+									beginShape();
+										vertex(314, 481);
+										bezierVertex(287, 492, 228, 401, 179, 475);
+										bezierVertex(146, 471, 177, 458, 182, 436);
+										bezierVertex(147, 428, 65, 402, 96, 386);
+										bezierVertex(109, 380, 93, 381, 124, 397);
+										vertex(162, 411);
+										vertex(152, 383);
+										vertex(169, 388);
+										bezierVertex(183, 429, 182, 409, 248, 417);
+										bezierVertex(266, 398, 196, 384, 187, 384);
+										vertex(184, 365);
+										vertex(219, 370);
+										bezierVertex(202, 351, 167, 290, 94, 296);
+										bezierVertex(69, 262, 182, 304, 110, 242);
+										vertex(126, 239);
+										bezierVertex(160, 272, 177, 323, 185, 265);
+										vertex(200, 272);
+										bezierVertex(192, 284, 175, 319, 254, 371);
+										bezierVertex(284, 369, 257, 306, 236, 304);
+										vertex(235, 284);
+										vertex(265, 301);
+										vertex(256, 214);
+										vertex(218, 184);
+										vertex(219, 163);
+										vertex(247, 187);
+										vertex(263, 149);
+										vertex(281, 154);
+										vertex(269, 188);
+										vertex(281, 264);
+										vertex(303, 221);
+										vertex(317, 222);
+										vertex(323, 226);
+										bezierVertex(301, 296, 269, 265, 291, 363);
+										bezierVertex(305, 394, 341, 375, 300, 301);
+										vertex(312, 280);
+										vertex(328, 320);
+										bezierVertex(385, 281, 360, 227, 348, 210);
+										bezierVertex(330, 186, 342, 169, 363, 206);
+										bezierVertex(391, 251, 391, 169, 396, 178);
+										vertex(412, 186);
+										bezierVertex(409, 242, 380, 205, 377, 282);
+										bezierVertex(399, 282, 398, 251, 403, 261);
+										bezierVertex(412, 298, 376, 289, 346, 348);
+										bezierVertex(341, 428, 388, 343, 406, 316);
+										bezierVertex(449, 240, 410, 226, 441, 217);
+										bezierVertex(453, 218, 429, 272, 456, 256);
+										vertex(474, 236);
+										vertex(489, 247);
+										bezierVertex(488, 271, 444, 276, 426, 316);
+										bezierVertex(422, 354, 471, 301, 476, 316);
+										bezierVertex(465, 339, 444, 325, 386, 378);
+										bezierVertex(352, 418, 428, 434, 438, 357);
+										vertex(455, 358);
+										bezierVertex(441, 441, 506, 347, 507, 357);
+										vertex(509, 372);
+										vertex(493, 390);
+										vertex(531, 387);
+										vertex(531, 406);
+										vertex(489, 407);
+										vertex(515, 431);
+										vertex(512, 448);
+										bezierVertex(489, 449, 469, 391, 341, 481);
+									endShape(CLOSE);
+									return get();
+								})();
+								var coralTexture = (function(){
+									
+									for (var i = 120; i < 506; i++) {
+										strokeWeight(2);
+										stroke(lerpColor(
+											color(251, 175, 158), 
+										color(254, 118, 115),
+										i / 506));
+										line(536, i, 76, i);
+									}
+									
+									for (var i = 0; i < 338; i++) {
+										for (var j = 0; j < 20; j++) {
+											strokeWeight(0.9 * j);
+											stroke(255, 75, 87);
+											point(random(26, 27) * i, random(28, 30) * j);
+										}
+									}
+
+									return get();
+								})();
+								var purpleCoral = (function() {
+									background(0, 0, 0, 0);
+									stroke(205, 142, 188);
+									strokeWeight(4);
+									
+									fill(128, 64, 118);
+									beginShape();
+										vertex(269, 533);
+										bezierVertex(263, 503, 269, 499, 274, 480);
+										bezierVertex(237, 453, 268, 368, 277, 361);
+										vertex(301, 371);
+										bezierVertex(303, 418, 251, 425, 282, 468);
+										bezierVertex(306, 478, 299, 425, 305, 421);
+										vertex(338, 425);
+										bezierVertex(348, 482, 276, 456, 285, 535);
+									endShape();
+									
+									fill(92, 46, 122);
+									beginShape();
+										vertex(291, 539);
+										bezierVertex(63, 542, 93, 390, 103, 387);
+										vertex(133, 401);
+										bezierVertex(149, 453, 118, 488, 198, 516);
+										bezierVertex(201, 483, 158, 488, 141, 378);
+										bezierVertex(122, 314, 125, 308, 133, 288);
+										vertex(166, 286);
+										bezierVertex(172, 309, 177, 323, 160, 380);
+										vertex(166, 396);
+										bezierVertex(187, 382, 199, 340, 191, 319);
+										vertex(216, 311);
+										bezierVertex(239, 355, 203, 381, 181, 409);
+										bezierVertex(165, 444, 207, 474, 215, 494);
+										vertex(216, 452);
+										bezierVertex(249, 399, 224, 407, 243, 344);
+										vertex(275, 344);
+										bezierVertex(296, 399, 224, 443, 228, 494);
+										bezierVertex(258, 543, 279, 503, 292, 540);
+									endShape();
+									
+									fill(141, 72, 138);
+									beginShape();
+										vertex(290, 538);
+										bezierVertex(202, 577, 173, 554, 182, 513);
+										bezierVertex(193, 453, 206, 430, 205, 402);
+										vertex(248, 403);
+										bezierVertex(257, 472, 183, 470, 204, 531);
+										bezierVertex(219, 545, 222, 536, 248, 534);
+										vertex(288, 538);
+									endShape();
+									
+									
+									noFill();
+									strokeWeight(2);
+									ellipse(225, 445, 14, 14);
+									ellipse(203, 462, 7, 7);
+									ellipse(218, 417, 10, 10);
+									
+									ellipse(154, 356, 9, 9);
+									ellipse(112, 410, 10, 10);
+									ellipse(111, 443, 6, 6);
+									ellipse(130, 471, 8, 8);
+									ellipse(212, 348, 9, 9);
+									ellipse(205, 327, 5, 5);
+									ellipse(258, 393, 11, 11);
+									ellipse(250, 359, 7, 7);
+									ellipse(268, 368, 9, 9);
+									
+									ellipse(284, 398, 7, 7);
+									ellipse(280, 381, 5, 5);
+									ellipse(310, 437, 5, 5);
+									ellipse(325, 431, 8, 8);
+									ellipse(318, 452, 7, 7);
+									
+									strokeWeight(5);
+									ellipse(236, 428, 2, 2);
+									ellipse(125, 428, 2, 2);
+									ellipse(161, 310, 2, 2);
+									ellipse(199, 360, 2, 2);
+									ellipse(157, 404, 2, 2);
+									ellipse(171, 442, 2, 2);
+									
+									strokeWeight(3);
+									ellipse(211, 436, 2, 2);
+									ellipse(203, 479, 2, 2);
+									ellipse(161, 340, 2, 2);
+									ellipse(143, 299, 2, 2);
+									ellipse(143, 325, 13, 14);
+									ellipse(244, 381, 4, 4);
+									ellipse(268, 356, 1, 1);
+									
+									ellipse(276, 411, 1, 1);
+									return get();
+									
+								})();
+
+								coralTexture.mask(coralShape);
+								
+								for (var i = 0; i < 800; i++) {
+									strokeWeight(2);
+									stroke(lerpColor(
+										color(19, 225, 243), 
+									color(25, 126, 166),
+									i / 800));
+									line(1000, i, 0, i);
+								}
+
+								noStroke();
+
+								for (var i = 0; i < 14; i++) {
+									fill(26, 178, 212, 50);
+									rect(random(1000), random(300, 800), 930, 43);
+								}
+
+								for (var i = 0; i < 14; i++) {
+									fill(168, 232, 255, 20);
+									rect(random(1000), random(0, 300), 930, 58);
+								}
+
+								filter(BLUR, 4);
+
+								image(seaweedShadow, -172, 240, 846, 651);
+
+								pushMatrix();
+									translate(708, 555);
+									rotate(radians(3));
+									image(seaweedShadow, -218, -433, 1067, 794);
+								popMatrix();
+
+
+								fill(222, 185, 118);
+								beginShape();
+									vertex(-2, 752);
+									bezierVertex(363, 716, 217, 756, 462, 767);
+									bezierVertex(616, 761, 734, 670, 1012, 728);
+									vertex(1005, 818);
+									vertex(0, 801);
+								endShape();
+
+								fill(196, 161, 104);
+								beginShape();
+									vertex(-51, 767);
+									vertex(123, 767);
+									bezierVertex(363, 784, 217, 735, 462, 806);
+									bezierVertex(683, 808, 481, 759, 774, 736);
+									bezierVertex(1098, 727, 481, 763, 1011, 801);
+									vertex(1005, 818);
+									vertex(0, 801);
+								endShape();
+
+								image(seaweed, -67, 565, 400, 300);
+								image(purpleCoral, -58, 400, 614, 552);
+								image(coralTexture, 64, 655, 277, 226);
+								image(coral2, 171, 687, 234, 200);
+								image(seaweed, 124, 571, 311, 228);
+
+								pushMatrix();
+									translate(937, 567);
+									rotate(radians(31));
+									image(seaweed, -200, -200, 656, 540);
+								popMatrix();
+
+								pushMatrix();
+									translate(399, 582);
+									rotate(radians(-42));
+									image(seaweed, 0, 0, 656, 540);
+								popMatrix();
+
+								pushMatrix();
+									translate(769, 761);
+									rotate(radians(-34));
+									image(seaweed, -234, -234, 308, 194);
+								popMatrix();
+
+								pushMatrix();
+									translate(504, 353);
+									rotate(radians(-63));
+									image(seaweed, 0, 0, 898, 752);
+								popMatrix();
+
+								pushMatrix();
+									translate(826, -460);
+									rotate(radians(-42));
+									scale(-1, 1);
+									image(seaweed, 0, 0, 898, 752);
+								popMatrix();
+
+								pushMatrix();
+									translate(474, 425);
+									rotate(radians(101));
+									scale(-1, 1);
+									image(seaweed, 58, 65, 740, 630);
+								popMatrix();
+
+								pushMatrix();
+									translate(406, 366);
+									rotate(radians(45));
+									scale(-1, 1);
+									image(seaweed, 58, 65, 580, 463);
+								popMatrix();
+								
+								pushMatrix();
+									rotate(radians(-14));
+									image(coral2, 669, 716, 283, 555);
+								popMatrix();
+
+								var bkg = get(0, 0, 1000, 800);
+								background(255, 255, 255);
+								imageMode(CENTER);
+							// } more nitowl stoughs
+							
+							// {
+								imageMode(CORNER);
+								
+								stroke(0);
+								strokeWeight(1);
+
+								var halfShell = (function(){
+									background(0, 0);
+									
+									// shell
+									fill(208, 179, 135);
+									beginShape();
+										vertex(183, 41);
+										bezierVertex(174, 44, 108, 21, 57, 88);
+										vertex(67, 102);
+										vertex(90, 97);
+										vertex(133, 110);
+										vertex(175, 103);
+										vertex(212, 116);
+										vertex(255, 96);
+										vertex(304, 109);
+										vertex(315, 89);
+										bezierVertex(284, 44, 224, 35, 186, 41);
+									endShape(CLOSE);
+									
+									// lines on shell
+									noFill();
+									bezier(179, 42, 113, 58, 103, 78, 96, 89);
+									bezier(181, 42, 153, 58, 136, 72, 123, 104);
+									bezier(181, 42, 179, 58, 195, 69, 187, 104);
+									bezier(181, 42, 208, 58, 233, 69, 245, 97);
+									bezier(181, 42, 256, 58, 279, 73, 291, 104);
+
+									return get();
+								})();
+								var lip = (function(){
+									background(0, 0);
+									
+									// white lip
+									fill(248, 241, 230);
+									pushMatrix();
+										translate(1, -59);
+										scale(0.99, 1.01);
+										beginShape();
+											vertex(58, 142);
+											bezierVertex(67, 161, 78, 145, 95, 146);
+											bezierVertex(114, 150, 122, 175, 148, 154);
+											bezierVertex(168, 146, 173, 158, 203, 167);
+											bezierVertex(216, 170, 224, 163, 250, 149);
+											bezierVertex(264, 145, 267, 158, 291, 161);
+											bezierVertex(308, 161, 303, 153, 318, 146);
+											bezierVertex(316, 166, 303, 173, 285, 171);
+											bezierVertex(256, 163, 264, 158, 249, 162);
+											bezierVertex(244, 164, 236, 178, 211, 178);
+											bezierVertex(186, 177, 191, 174, 167, 164);
+											bezierVertex(142, 162, 143, 176, 125, 175);
+											bezierVertex(112, 170, 97, 159, 90, 158);
+											bezierVertex(46, 170, 54, 141, 54, 140);
+										endShape(CLOSE);
+									popMatrix();
+
+									return get();
+								})();
+								var blackInside1 = (function(){
+									background(0, 0);
+									// black inside
+									fill(0, 0, 0);
+									beginShape();
+										vertex(55, 110);
+										bezierVertex(57, 93, 47, 103, 80, 119);
+										bezierVertex(75, 119, 50, 137, 55, 142);
+										vertex(61, 152);
+										vertex(169, 188);
+										vertex(309, 161);
+										vertex(318, 145);
+										bezierVertex(320, 136, 306, 132, 302, 129);
+										vertex(313, 111);
+										vertex(67, 98);
+									endShape();
+									return get();
+									
+								})();
+								var blackInside = (function(){
+									background(0, 0);
+									// black inside
+									fill(0, 0, 0);
+									beginShape();
+										vertex(55, 96);
+										bezierVertex(57, 93, 47, 103, 80, 119);
+										bezierVertex(75, 119, 50, 137, 55, 142);
+										vertex(61, 152);
+										vertex(169, 188);
+										vertex(309, 161);
+										vertex(318, 145);
+										bezierVertex(320, 136, 306, 132, 302, 129);
+										vertex(313, 98);
+										vertex(55, 98);
+									endShape();
+									return get();
+									
+								})();
+
+								var halfShellPurple = (function(){
+									background(0, 0);
+									
+									// shell
+									fill(167, 131, 196);
+									beginShape();
+										vertex(183, 41);
+										bezierVertex(174, 44, 108, 21, 57, 88);
+										vertex(67, 102);
+										vertex(90, 97);
+										vertex(133, 110);
+										vertex(175, 103);
+										vertex(212, 116);
+										vertex(255, 96);
+										vertex(304, 109);
+										vertex(315, 89);
+										bezierVertex(284, 44, 224, 35, 186, 41);
+									endShape(CLOSE);
+									
+									// lines on shell
+									noFill();
+									bezier(179, 42, 113, 58, 103, 78, 96, 89);
+									bezier(181, 42, 153, 58, 136, 72, 123, 104);
+									bezier(181, 42, 179, 58, 195, 69, 187, 104);
+									bezier(181, 42, 208, 58, 233, 69, 245, 97);
+									bezier(181, 42, 256, 58, 279, 73, 291, 104);
+
+									return get();
+								})();
+								var lipPurple = (function(){
+									background(0, 0);
+									
+									// white lip
+									fill(235, 204, 255);
+									pushMatrix();
+										translate(1, -59);
+										scale(0.99, 1.01);
+										beginShape();
+											vertex(58, 142);
+											bezierVertex(67, 161, 78, 145, 95, 146);
+											bezierVertex(114, 150, 122, 175, 148, 154);
+											bezierVertex(168, 146, 173, 158, 203, 167);
+											bezierVertex(216, 170, 224, 163, 250, 149);
+											bezierVertex(264, 145, 267, 158, 291, 161);
+											bezierVertex(308, 161, 303, 153, 318, 146);
+											bezierVertex(316, 166, 303, 173, 285, 171);
+											bezierVertex(256, 163, 264, 158, 249, 162);
+											bezierVertex(244, 164, 236, 178, 211, 178);
+											bezierVertex(186, 177, 191, 174, 167, 164);
+											bezierVertex(142, 162, 143, 176, 125, 175);
+											bezierVertex(112, 170, 97, 159, 90, 158);
+											bezierVertex(46, 170, 54, 141, 54, 140);
+										endShape(CLOSE);
+									popMatrix();
+
+									return get();
+								})();
+
+								var halfShell1 = (function(){
+									background(0, 0);
+									
+									// shell
+									fill(235, 201, 150);
+									beginShape();
+										vertex(183, 41);
+										bezierVertex(174, 44, 108, 21, 57, 88);
+										vertex(67, 102);
+										vertex(90, 97);
+										vertex(133, 110);
+										vertex(175, 103);
+										vertex(212, 116);
+										vertex(255, 96);
+										vertex(304, 109);
+										vertex(315, 89);
+										bezierVertex(284, 44, 224, 35, 186, 41);
+									endShape(CLOSE);
+									
+									// lines on shell
+									noFill();
+									bezier(179, 42, 113, 58, 103, 78, 96, 89);
+									bezier(181, 42, 153, 58, 136, 72, 123, 104);
+									bezier(181, 42, 179, 58, 195, 69, 187, 104);
+									bezier(181, 42, 208, 58, 233, 69, 245, 97);
+									bezier(181, 42, 256, 58, 279, 73, 291, 104);
+
+									return get();
+								})();
+
+								var oysterSpecial = (function(){
+									background(0, 0);
+									image(blackInside, 0, 0);
+									image(halfShellPurple, 0, 0);
+									image(lipPurple, 0, 0);
+									
+									// bottom stuff
+									pushMatrix();
+										translate(21, 208);
+										rotate(radians(2));
+										scale(0.88, -0.61);
+										image(halfShellPurple, 0, 0);
+									popMatrix();
+									
+									fill(0);
+									ellipse(207, 145, 79, 40);
+									ellipse(128, 143, 61, 40);
+									ellipse(289, 148, 46, 25);
+									
+									pushMatrix();
+										translate(-4, 61);
+										scale(1.03, 0.92);
+										image(lipPurple, 0, 0);
+									popMatrix();
+									
+									// eyes
+									fill(255);
+									ellipse(232, 132, 26, 33);
+									ellipse(153, 132, 26, 33);
+									
+									fill(0);
+									ellipse(232, 132, 14, 19);
+									ellipse(153, 132, 14, 19);
+									
+									// reflection on eyes
+									noStroke();
+									fill(255);
+									ellipse(235, 125, 10, 10);
+									ellipse(155, 125, 10, 10);
+									
+									return get();
+								})();
+								var oysterNormal = (function(){
+									background(0, 0);
+									
+									image(blackInside, 0, 0);
+									image(halfShell, 0, 0);
+									image(lip, 0, 0);
+									
+									// bottom stuff
+									pushMatrix();
+										translate(21, 208);
+										rotate(radians(2));
+										scale(0.88, -0.61);
+										image(halfShell, 0, 0);
+									popMatrix();
+									
+									fill(0);
+									ellipse(207, 145, 79, 40);
+									ellipse(128, 143, 61, 40);
+									ellipse(289, 148, 46, 25);
+									
+									pushMatrix();
+										translate(-4, 61);
+										scale(1.03, 0.92);
+										image(lip, 0, 0);
+									popMatrix();
+									
+									// eyes
+									fill(255);
+									ellipse(232, 132, 26, 33);
+									ellipse(153, 132, 26, 33);
+									
+									fill(0);
+									ellipse(232, 132, 14, 19);
+									ellipse(153, 132, 14, 19);
+									
+									// reflection on eyes
+									noStroke();
+									fill(255);
+									ellipse(235, 125, 10, 10);
+									ellipse(155, 125, 10, 10);
+									
+									return get();
+								})();
+								var oysterFast = (function(){
+									background(0, 0);
+									
+									image(blackInside, 0, 0);
+									image(halfShell1, 0, 0);
+									image(lip, 0, 0);
+									
+									// bottom stuff
+									pushMatrix();
+										translate(21, 208);
+										rotate(radians(2));
+										scale(0.88, -0.61);
+										image(halfShell1, 0, 0);
+									popMatrix();
+									
+									fill(0);
+									ellipse(207, 145, 79, 40);
+									ellipse(128, 143, 61, 40);
+									ellipse(289, 148, 46, 25);
+									
+									pushMatrix();
+										translate(-4, 61);
+										scale(1.03, 0.92);
+										image(lip, 0, 0);
+									popMatrix();
+									
+									// eyes
+									fill(255);
+									ellipse(232, 132, 30, 36);
+									ellipse(153, 132, 30, 36);
+									
+									fill(0);
+									ellipse(232, 132, 24, 29);
+									ellipse(153, 132, 24, 29);
+									
+									// reflection on eyes
+									noStroke();
+									fill(255);
+									ellipse(239, 125, 10, 13);
+									ellipse(159, 125, 10, 13);
+									return get();
+								})();
+								var oysterSlow = (function(){
+									background(0, 0);
+									
+									image(blackInside1, 0, 0);
+									image(halfShell, 0, 21);
+
+									// bottom stuff
+									pushMatrix();
+										translate(21, 208);
+										rotate(radians(2));
+										scale(0.88, -0.61);
+										image(halfShell, 0, 0);
+									popMatrix();
+									
+									fill(0);
+									ellipse(207, 154, 69, 20);
+									ellipse(134, 153, 47, 21);
+									ellipse(289, 148, 46, 25);
+									
+									// eyes
+									fill(255);
+									ellipse(232, 145, 26, 33);
+									ellipse(153, 144, 26, 33);
+									
+									fill(0);
+									ellipse(232, 145, 14, 19);
+									ellipse(153, 144, 14, 19);
+									
+									// reflection on eyes
+									noStroke();
+									fill(255);
+									ellipse(235, 140, 10, 10);
+									ellipse(155, 138, 10, 10);
+									
+									image(lip, 0, 21);
+									
+									pushMatrix();
+										translate(-4, 61);
+										scale(1.03, 0.92);
+										image(lip, 0, 0);
+									popMatrix();
+									return get();
+								})();
+
+								background(0, 0, 0, 0);
+								pushMatrix();
+									translate(-50, -38);
+									image(oysterSpecial, 0, 0);
+								popMatrix();
+								var enemySpecial = get(0, 0, 272, 154);
+								background(255, 255, 255);
+
+								background(0, 0, 0, 0);
+								pushMatrix();
+									translate(-50, -38);
+									image(oysterNormal, 0, 0);
+								popMatrix();
+								var enemyNormal = get(0, 0, 272, 154);
+								background(255, 255, 255);
+
+								background(0, 0, 0, 0);
+								pushMatrix();
+									translate(-50, -38);
+									image(oysterFast, 0, 0);
+								popMatrix();
+								var enemyFast = get(0, 0, 272, 154);
+								background(255, 255, 255);
+
+								background(0, 0, 0, 0);
+								pushMatrix();
+									translate(-50, -59);
+									image(oysterSlow, 0, 0);
+								popMatrix();
+								var enemySlow = get(0, 0, 272, 133);
+								background(255, 255, 255);
+								
+								imageMode(CENTER);
+							// } enemy stough
+							
+							background(0, 0, 0, 0);
+							for (var i = 0; i < 100; i++) {
+								fill(lerpColor(color(40, 40, 40), color(190, 190, 190), i / 100));
+								rect(300, i, 600, 1);
+							}
+							for (var i = 0; i < 100; i++) {
+								fill(lerpColor(color(190, 190, 190), color(60, 60, 60), i / 100));
+								rect(300, i + 100, 600, 1);
+							}
+							var gradtex = get(0, 0, 600, 200);
+							background(255, 255, 255);
+							
+							background(0, 0, 0);
+							noStroke();
+							fill(255, 255, 255);
+							pushMatrix();
+								translate(0, -140);
+								scale(0.7);
+								
+								rect(300, 300, 80 / 1.3, 27 / 1.3, 5);
+								rect(300, 350, 25, 100);
+								triangle(288, 400, 313, 400, 300, 420);
+								
+								for (var i = 0; i < 4; i++) {
+									pushMatrix();
+										translate(300, 326 + i * 18);
+										rotate(radians(-11.42));
+										
+										rect(0, 0, 100 / 2.2, 20 / 2, 5);
+									popMatrix();
+								}
+							popMatrix();
+							var nailMsk = get(0, 0, 600, 200);
+							gradtex.mask(nailMsk);
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(200, 430, 170);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(200, 430, 170);
+								rotNail(300, 540, 100);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(290, 470, 120);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(290, 470, 120);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+								rotNail(250, 420, 200);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(165, 378, 200);
+								rotNail(290, 470, 120);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+								rotNail(250, 420, 200);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(165, 378, 200);
+								rotNail(290, 470, 120);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+								rotNail(310, 390, 310);
+								rotNail(250, 420, 200);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(165, 378, 200);
+								rotNail(310, 440, 70);
+								rotNail(290, 470, 120);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(300, 540, 100);
+								rotNail(310, 390, 310);
+								rotNail(250, 420, 200);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							background(0, 0, 0, 0);
+							pushMatrix();
+								translate(-203, -322);
+								
+								rotNail(313, 338, -40);
+								rotNail(165, 378, 200);
+								rotNail(310, 440, 70);
+								rotNail(290, 470, 120);
+								rotNail(200, 430, 170);
+								rotNail(410, 420, 20);
+								rotNail(350, 480, 80);
+								rotNail(300, 540, 100);
+								rotNail(310, 390, 310);
+								rotNail(250, 420, 200);
+							popMatrix();
+							nailImgs.push(get(0, 0, 175, 175));
+							background(255, 255, 255);
+							
+							// {
+								background(0, 0, 0, 0);
+								stroke(0, 0, 0);
+								strokeWeight(1);
+								pushMatrix();
+									translate(-316, -165);
+									scale(2.3);
+									
+									fill(51);
+									
+									// left fin
+									beginShape();
+										vertex(138, 225);
+										bezierVertex(144, 160, 173, 143, 165, 152);
+										vertex(177, 173);
+										bezierVertex(151, 197, 157, 192, 138, 225);
+									endShape();
+									
+									// right fin
+									beginShape();
+										vertex(216, 146);
+										bezierVertex(251, 170, 252, 204, 256, 220);
+										bezierVertex(238, 187, 228, 178, 216, 179);
+									endShape();
+									
+									// under fin
+									beginShape();
+										vertex(178, 280);
+										bezierVertex(189, 272, 196, 282, 203, 292);
+										vertex(194, 252);
+										bezierVertex(175, 267, 175, 282, 178, 280);
+									endShape();
+									
+									// body
+									fill(81);
+									beginShape();
+										vertex(163, 151);
+										bezierVertex(161, 95, 178, 69, 191, 73);
+										bezierVertex(212, 80, 220, 142, 221, 147);
+										vertex(221, 177);
+										bezierVertex(227, 256, 223, 259, 215, 306);
+										bezierVertex(214, 347, 217, 341, 215, 347);
+										bezierVertex(200, 316, 203, 341, 218, 383);
+										bezierVertex(198, 350, 198, 347, 196, 362);
+										bezierVertex(190, 341, 205, 347, 196, 296);
+										bezierVertex(187, 253, 183, 241, 177, 217);
+										bezierVertex(171, 196, 165, 175, 163, 152);
+									endShape(CLOSE);
+									
+									// top fin
+									fill(51);
+									beginShape();
+										vertex(208, 259);
+										bezierVertex(218, 253, 232, 265, 228, 257);
+										bezierVertex(228, 253, 229, 255, 204, 202);
+									endShape();
+									
+									fill(0);
+									customEllipse(207, 101, 7, 14, -10);
+									customEllipse(171, 101, 7, 14, 9);
+									
+									fill(255);
+									ellipse(207, 99, 6, 5);
+									ellipse(171, 99, 6, 5);
+								popMatrix();
+								noStroke();
+								var bigShark = get(0, 0, 121 * 2.3, 313 * 2.3);
+								background(255, 255, 255);
+								
+								background(0, 0, 0, 0);
+								pushMatrix();
+									translate(-91, -69);
+									scale(1.8);
+									
+									stroke(0, 0, 0);
+									strokeWeight(1);
+									
+									fill(0, 0, 0);
+									beginShape();
+										vertex(55, 96);
+										bezierVertex(57, 93, 47, 103, 80, 119);
+										bezierVertex(75, 119, 50, 137, 55, 142);
+										vertex(61, 152);
+										vertex(169, 188);
+										vertex(309, 161);
+										vertex(318, 145);
+										bezierVertex(320, 136, 306, 132, 302, 129);
+										vertex(313, 98);
+										vertex(55, 98);
+									endShape();
+									
+									fill(167, 131, 196);
+									beginShape();
+										vertex(183, 41);
+										bezierVertex(174, 44, 108, 21, 57, 88);
+										vertex(67, 102);
+										vertex(90, 97);
+										vertex(133, 110);
+										vertex(175, 103);
+										vertex(212, 116);
+										vertex(255, 96);
+										vertex(304, 109);
+										vertex(315, 89);
+										bezierVertex(284, 44, 224, 35, 186, 41);
+									endShape(CLOSE);
+									
+									noFill();
+									bezier(179, 42, 113, 58, 103, 78, 96, 89);
+									bezier(181, 42, 153, 58, 136, 72, 123, 104);
+									bezier(181, 42, 179, 58, 195, 69, 187, 104);
+									bezier(181, 42, 208, 58, 233, 69, 245, 97);
+									bezier(181, 42, 256, 58, 279, 73, 291, 104);
+									
+									fill(235, 204, 255);
+									pushMatrix();
+										translate(1, -59);
+										scale(0.99, 1.01);
+										beginShape();
+											vertex(58, 142);
+											bezierVertex(67, 161, 78, 145, 95, 146);
+											bezierVertex(114, 150, 122, 175, 148, 154);
+											bezierVertex(168, 146, 173, 158, 203, 167);
+											bezierVertex(216, 170, 224, 163, 250, 149);
+											bezierVertex(264, 145, 267, 158, 291, 161);
+											bezierVertex(308, 161, 303, 153, 318, 146);
+											bezierVertex(316, 166, 303, 173, 285, 171);
+											bezierVertex(256, 163, 264, 158, 249, 162);
+											bezierVertex(244, 164, 236, 178, 211, 178);
+											bezierVertex(186, 177, 191, 174, 167, 164);
+											bezierVertex(142, 162, 143, 176, 125, 175);
+											bezierVertex(112, 170, 97, 159, 90, 158);
+											bezierVertex(46, 170, 54, 141, 54, 140);
+										endShape(CLOSE);
+									popMatrix();
+									
+									pushMatrix();
+										translate(21, 208);
+										rotate(radians(2));
+										scale(0.88, -0.61);
+										// shell
+										fill(167, 131, 196);
+										beginShape();
+											vertex(183, 41);
+											bezierVertex(174, 44, 108, 21, 57, 88);
+											vertex(67, 102);
+											vertex(90, 97);
+											vertex(133, 110);
+											vertex(175, 103);
+											vertex(212, 116);
+											vertex(255, 96);
+											vertex(304, 109);
+											vertex(315, 89);
+											bezierVertex(284, 44, 224, 35, 186, 41);
+										endShape(CLOSE);
+										
+										// lines on shell
+										noFill();
+										bezier(179, 42, 113, 58, 103, 78, 96, 89);
+										bezier(181, 42, 153, 58, 136, 72, 123, 104);
+										bezier(181, 42, 179, 58, 195, 69, 187, 104);
+										bezier(181, 42, 208, 58, 233, 69, 245, 97);
+										bezier(181, 42, 256, 58, 279, 73, 291, 104);
+									popMatrix();
+									
+									fill(0);
+									ellipse(207, 145, 79, 40);
+									ellipse(128, 143, 61, 40);
+									ellipse(289, 148, 46, 25);
+									
+									pushMatrix();
+										translate(-4, 61);
+										scale(1.03, 0.92);
+										fill(235, 204, 255);
+										pushMatrix();
+											translate(1, -59);
+											scale(0.99, 1.01);
+											beginShape();
+												vertex(58, 142);
+												bezierVertex(67, 161, 78, 145, 95, 146);
+												bezierVertex(114, 150, 122, 175, 148, 154);
+												bezierVertex(168, 146, 173, 158, 203, 167);
+												bezierVertex(216, 170, 224, 163, 250, 149);
+												bezierVertex(264, 145, 267, 158, 291, 161);
+												bezierVertex(308, 161, 303, 153, 318, 146);
+												bezierVertex(316, 166, 303, 173, 285, 171);
+												bezierVertex(256, 163, 264, 158, 249, 162);
+												bezierVertex(244, 164, 236, 178, 211, 178);
+												bezierVertex(186, 177, 191, 174, 167, 164);
+												bezierVertex(142, 162, 143, 176, 125, 175);
+												bezierVertex(112, 170, 97, 159, 90, 158);
+												bezierVertex(46, 170, 54, 141, 54, 140);
+											endShape(CLOSE);
+										popMatrix();
+									popMatrix();
+									
+									// eyes
+									fill(255);
+									ellipse(232, 132, 26, 33);
+									ellipse(153, 132, 26, 33);
+									
+									fill(0);
+									ellipse(232, 132, 14, 19);
+									ellipse(153, 132, 14, 19);
+									
+									// reflection on eyes
+									noStroke();
+									fill(255);
+									ellipse(235, 125, 10, 10);
+									ellipse(155, 125, 10, 10);
+									
+									noStroke();
+								popMatrix();
+								var bigOyster = get(0, 0, 489, 276);
+								background(255, 255, 255);
+							// } enlarged characters for better res images
+							
+							function rotNail(x, y, rot) {
+								pushMatrix();
+									translate(x, y);
+									rotate(radians(rot));
+									
+									image(gradtex, 0, 0);
+								popMatrix();
+							}
+							
+							function anim(func) {
+								anims.push(func);
+							}
+				        // }
+				        // all classes {
+							class Particle {
+								constructor(x, y, size, sizeVel, xVel, yVel, gravity, shape, col, transVel, text) {
+									this.x = x;
+									this.y = y;
+									
+									this.size = size; // size
+									this.sizeVel = sizeVel || 0;
+									
+									this.xVel = xVel || 0;
+									this.yVel = yVel || 0;
+									this.gravity = gravity || 0; // gravity
+									
+									this.shape = shape || "circle"; // shape
+									
+									this.col = col || color(255, 255, 255); // color
+									this.trans = 255; // transparency
+									this.transVel = transVel || 0;
+									this.text = text || "";
+									
+									this.spliced = false; // spliced?
+								} // contructor
+								
+								move() {
+									this.x += this.xVel;
+									
+									this.y += this.yVel;
+									this.yVel += this.gravity;
+								} // move method
+								
+								shrink() {
+									this.size -= this.sizeVel;
+								} // shrink method
+								
+								fade() {
+									this.trans -= this.transVel;
+								} // fade method
+								
+								toSplice() {
+									if (this.shape === "bubble") {
+										if (this.y < -100) {
+											this.spliced = true;
+										}
+									} else {
+										if (this.trans < 0 || this.size < 0 || this.x < -50 || this.x > 1050 || this.y < -50 || this.y > 850) {
+											this.spliced = true;
+										}
+									}
+								} // to splice method
+								
+								display() {
+									fill(this.col, this.trans);
+									
+									if (this.shape === "circle") {
+										ellipse(this.x, this.y, this.size, this.size);
+									} else if (this.shape === "rect") {
+										rect(this.x, this.y, this.size, this.size);
+									} else if (this.shape === "text") {
+										textFont(createFont("Verdana Bold"), this.size);
+										text(this.text, this.x, this.y);
+									} else if (this.shape === "bubble") {
+										strokeWeight((0.5 + this.size / 50) * 1.5);
+										stroke(255, 255, 255, 240);
+										fill(255, 255, 255, 50);
+										ellipse(this.x, this.y, this.size, this.size);
+										noFill();
+										strokeWeight((1 + this.size / 50) * 1.2);
+										arc(this.x, this.y, this.size * 2 / 3, this.size * 2 / 3, radians(270), radians(360));
+										noStroke();
+									}
+								} // display method
+								
+								update() {
+									// call other methods
+									this.move();
+									this.shrink();
+									this.fade();
+									this.toSplice();
+									this.display();
+								} // update method
+							} // Particle class
+						    
+							class Transition {
+						        constructor(func) {
+						            this.xoff = 0;
+									
+									this.rotoff = 0;
+									this.lazer = false;
+									
+									this.timer = 0;
+									this.trans = 255;
+									this.show = true;
+									this.weight = 0;
+									this.pos = false;
+									this.clr = {
+										r: 255,
+										g: 34,
+										b: 0,
+									};
+									
+									this.spliced = false;
+									this.func = func;
+						        } // constructor
+						        
+						        toSplice() {
+									if (this.trans <= 0) {
+										this.spliced = true;
+									}
+						        } // toSplice method
+								
+								work() {
+									this.xoff = lerp(this.xoff, -550, 0.1);
+									
+									if (this.xoff < -450) {
+										this.rotoff = lerp(this.rotoff, 90, 0.12);
+									}
+									
+									if (this.rotoff > 80) {
+										this.lazer = true;
+									}
+									
+									if (this.lazer) {
+										this.timer++;
+									}
+									
+									if (this.timer > 25) {
+										this.weight = lerp(this.weight, 2998, 0.1);
+										this.clr.r = lerp(this.clr.r, 255, 0.2);
+										this.clr.g = lerp(this.clr.g, 255, 0.2);
+										this.clr.b = lerp(this.clr.b, 255, 0.2);
+										this.pos = true;
+									}
+									
+									if (this.weight > 2995) {
+										if (this.weight < 3000) {
+											this.func();
+										}
+										this.show = false;
+									}
+									
+									if (!this.show) {
+										this.trans -= 5;
+									}
+								}
+						        
+						        display() {
+						            if (this.show) {
+										image(bigOyster, 1600 + this.xoff, 400);
+										
+										if (this.pos) {
+											pushMatrix();
+												translate(-150, 400);
+												rotate(radians(0 + this.rotoff));
+												
+												image(bigShark, 0, 0);
+											popMatrix();
+										}
+										
+										if (this.lazer) {
+											pushMatrix();
+												translate(0, 400);
+												rotate(radians(270 + this.rotoff));
+												
+												stroke(this.clr.r, this.clr.g, this.clr.b, 100);
+												strokeWeight(12 * 4 + this.weight);
+												line(0, 0, 1000, 0);
+												stroke(this.clr.r, this.clr.g, this.clr.b, 255);
+												strokeWeight(5 * 4 + this.weight * 5 / 12);
+												line(0, 0, 1000, 0);
+											popMatrix();
+										}
+										
+										if (!this.pos) {
+											pushMatrix();
+												translate(-150, 400);
+												rotate(radians(0 + this.rotoff));
+												
+												image(bigShark, 0, 0);
+											popMatrix();
+										}
+									} else {
+										fill(255, 255, 255, this.trans);
+										rect(500, 400, 1500, 1500);
+									}
+						        } // display method
+						        
+						        update() {
+						            this.work();
+									this.display();
+									this.toSplice();
+						        } // update method
+						    } // Transition class
+							
+							class Bullet {
+						        constructor(x, y, rot, type, speed, damage, damage2) {
+						            this.x = x; // x
+									this.y = y; // y
+									
+									this.rot = rot;
+									
+									this.speed = speed || 10;
+									this.damage = damage || 0;
+									this.damage2 = damage2 || 0;
+									
+									this.width = 10;
+									this.height = 5;
+									
+									this.spliced = false;
+									
+									this.type = type || "useless";
+						        } // constructor
+						        
+						        move() {
+									this.x += sin(radians(this.rot)) * this.speed;
+									this.y += cos(radians(this.rot)) * this.speed;
+						        } // move method
+						        
+						        toSplice(arr) {
+									if (this.x < -500 || this.x > 1500 || this.y < -500 || this.y > 1500) {
+										this.spliced = true;
+									}
+									
+									for (var i = arr.length - 1; i >= 0; i--) {
+										if (rectToRect(this.x, this.y, this.width, this.height, arr[i].x, arr[i].y, arr[i].width, arr[i].height)) {
+											if (arr[i].img === enemySpecial) {
+												let rand = floor(random(0, 5));
+												if (rand === 0) {
+													let otherRand = floor(random(0, 4));
+													if (otherRand === 0) {
+														arr[i].speedUp = 300;
+													} else if (otherRand === 1 || otherRand === 2 || otherRand === 3) {
+														var indexes = [];
+														for (var j = 0; j < enemies.length; j++) {
+															if (enemies[j].health < enemies[j].helth && i !== j) {
+																indexes.push(j);
+															}
+														}
+														
+														if (indexes.length > 0) {
+															let rands = floor(random(3, 5));
+															enemies[indexes[floor(random(0, indexes.length))]].health += rands;
+															if (enemies[indexes[floor(random(0, indexes.length))]].health > enemies[indexes[floor(random(0, indexes.length))]].helth) {
+																enemies[indexes[floor(random(0, indexes.length))]].health = enemies[indexes[floor(random(0, indexes.length))]].helth;
+															}
+														} else {
+															let randss = floor(random(3, 5));
+															arr[i].health += randss;
+															if (arr[i].health > arr[i].helth) {
+																arr[i].health = arr[i].helth;
+															}
+														}
+													}
+												} else {
+													arr[i].health -= this.damage;
+												}
+											} else {
+												arr[i].health -= this.damage;
+											}
+											this.spliced = true;
+										}
+									}
+						        } // toSplice method
+						        
+						        display() {
+						            pushMatrix();
+										translate(this.x, this.y);
+										rotate(radians(-this.rot - 90));
+										
+										fill(0, 0, 0);
+										noStroke();
+										rect(0, 0, this.width, this.height);
+									popMatrix();
+						        } // display method
+						        
+						        update(arr) {
+						            // call other methods
+									this.toSplice(arr);
+									this.move();
+									this.display();
+									
+									if (this.spliced && this.type === "toFreeze") {
+										bullets.push(new Pulse(this.x, this.y, this.damage2));
+									}
+						        } // update method
+						    } // Bullet class
+							
+							class Cannon {
+								constructor(x, y, rot, damage) {
+						            this.x = x; // x
+									this.y = y; // y
+									
+									this.rot = rot;
+									this.rotD = rot;
+									
+									this.speed = 5;
+									
+									this.width = 25;
+									this.height = 25;
+									
+									this.spliced = false;
+									
+									this.isCol = false;
+									this.damage = damage;
+						        } // constructor
+						        
+						        move() {
+									this.x += sin(radians(this.rot)) * this.speed;
+									this.y += cos(radians(this.rot)) * this.speed;
+						        } // move method
+						        
+						        toSplice(arr) {
+									if (this.x < -50 || this.x > 1050 || this.y < -50 || this.y > 850) {
+										this.spliced = true;
+									}
+									
+									for (var i = arr.length - 1; i >= 0; i--) {
+										if (rectToRect(this.x, this.y, this.width, this.height, arr[i].x, arr[i].y, arr[i].width, arr[i].height)) {
+											if (arr[i].img === enemySpecial) {
+												let rand = floor(random(0, 10));
+												if (rand === 0) {
+													let otherRand = floor(random(0, 4));
+													if (otherRand === 0) {
+														arr[i].speedUp = 300;
+													} else if (otherRand === 1 || otherRand === 2 || otherRand === 3) {
+														var indexes = [];
+														for (var j = 0; j < enemies.length; j++) {
+															if (enemies[j].health < enemies[j].helth && i !== j) {
+																indexes.push(j);
+															}
+														}
+														
+														if (indexes.length > 0) {
+															let rands = floor(random(3, 5));
+															enemies[indexes[floor(random(0, indexes.length))]].health += rands;
+															if (enemies[indexes[floor(random(0, indexes.length))]].health > enemies[indexes[floor(random(0, indexes.length))]].helth) {
+																enemies[indexes[floor(random(0, indexes.length))]].health = enemies[indexes[floor(random(0, indexes.length))]].helth;
+															}
+														} else {
+															let randss = floor(random(3, 5));
+															arr[i].health += randss;
+															if (arr[i].health > arr[i].helth) {
+																arr[i].health = arr[i].helth;
+															}
+														}
+													}
+												} else {
+													arr[i].health -= this.damage;
+												}
+											} else {
+												arr[i].health -= this.damage;
+											}
+										}
+									}
+						        } // toSplice method
+						        
+						        display() {
+						            pushMatrix();
+										translate(this.x, this.y);
+										rotate(radians(-frameCount * 5));
+										
+										fill(255, 255, 255, 100);
+										stroke(255, 255, 255);
+										strokeWeight(2);
+										ellipse(0, 0, this.width, this.height);
+										noFill();
+										arc(0, 0, this.width * 5 / 8, this.height * 5 / 8, radians(-90), radians(0));
+										noStroke();
+									popMatrix();
+						        } // display method
+						        
+						        update(arr) {
+						            // call other methods
+									this.toSplice(arr);
+									this.move();
+									this.display();
+						        } // update method
+							}
+							
+							class Pulse {
+								constructor(x, y, damage) {
+						            this.x = x; // x
+									this.y = y; // y
+									
+									this.width = 20;
+									this.height = 20;
+									
+									this.spliced = false;
+									
+									this.trans = 250;
+									this.damage = damage;
+						        } // constructor
+						        
+						        grow() {
+									this.width += 3;
+									this.height += 3;
+									this.trans -= 5;
+						        } // grow method
+						        
+						        toSplice(arr) {
+									if (this.width > 200) {
+										this.spliced = true;
+									}
+									
+									for (var i = arr.length - 1; i >= 0; i--) {
+										var obj = arr[i];
+										if (circleToRect(this.x, this.y, this.width / 2, obj.x, obj.y, obj.width, obj.height)) {
+											obj.freeze = 200;
+											obj.health -= this.damage;
+										}
+									}
+						        } // toSplice method
+						        
+						        display() {
+									fill(0, 0, 0, this.trans);
+									noStroke();
+									ellipse(this.x, this.y, this.width, this.height);
+						        } // display method
+						        
+						        update(arr) {
+						            // call other methods
+									this.toSplice(arr);
+									this.grow();
+									this.display();
+						        } // update method
+							}
+							
+							class TowerButton {
+								constructor(x, y, type, img, func, info) {
+						            this.x = x; // x
+									this.y = y; // y
+									
+									this.img = img;
+									
+									this.width = 140;
+									this.height = 140;
+									
+									switch (type) {
+										case "reg":
+											this.cost = 200;
+										break;
+										case "cannon":
+											this.cost = 450;
+										break;
+										case "freeze":
+											this.cost = 400;
+										break;
+										case "lazer":
+											this.cost = 850;
+										break;
+										case "nails":
+											this.cost = 20;
+										break;
+									}
+									
+									switch (this.img) {
+										case goldyImg:
+											this.widthO = 107;
+											this.heightO = 292;
+										break;
+										case fatImg:
+											this.widthO = 229;
+											this.heightO = 313;
+										break;
+										case fish4Texture:
+											this.widthO = 222;
+											this.heightO = 327;
+										break;
+										case sharkImg:
+											this.widthO = 121;
+											this.heightO = 313;
+										break;
+										case nailImgs[9]:
+											this.widthO = 85 * 3;
+											this.heightO = 85 * 3;
+										break;
+									}
+									
+									this.widthO /= 3;
+									this.heightO /= 3;
+									
+									this.func = func;
+									this.toDisplay = true;
+									this.onHov = false;
+									
+									this.col1 = color(186, 206, 214);
+									this.col2 = color(43, 56, 61);
+									
+									this.info = info;
+						        } // constructor
+						        
+						        hover() {
+									if (pointToRect(mouseX, mouseY, this.x, this.y, this.width, this.height)) {
+										(mone >= this.cost) ? cursor("pointer") : cursor("not-allowed");
+										this.onHov = true;
+										this.col1 = lerpColor(this.col1, color(43, 56, 61), 0.1);
+										this.col2 = lerpColor(this.col2, color(186, 206, 214), 0.1);
+										
+										if (mouseX + this.info.width > 970) {
+											fill(33, 46, 71, 200);
+											rect(mouseX - this.info.width / 2, mouseY - this.info.height / 2, this.info.width, this.info.height);
+											fill(186, 206, 214);
+											textFont(createFont("Verdana"), 20);
+											text(this.info.text, mouseX - this.info.width / 2, mouseY - this.info.height / 2);
+										} else {
+											fill(33, 46, 71, 200);
+											rect(mouseX + this.info.width / 2, mouseY - this.info.height / 2, this.info.width, this.info.height);
+											fill(186, 206, 214);
+											textFont(createFont("Verdana"), 20);
+											text(this.info.text, mouseX + this.info.width / 2, mouseY - this.info.height / 2);
+										}
+									} else {
+										this.onHov = false;
+										this.col1 = lerpColor(this.col1, color(186, 206, 214), 0.1);
+										this.col2 = lerpColor(this.col2, color(43, 56, 61), 0.1);
+									}
+						        } // hover method
+								
+								click() {
+									if (pointToRect(mouseX, mouseY, this.x, this.y, this.width, this.height) && clicked && mouseButton === LEFT && mone >= this.cost) {
+										this.func();
+									}
+								} // click method
+						        
+						        display() {
+									if (this.toDisplay) {
+										stroke(186, 206, 214);
+										fill(this.col2);
+										strokeWeight(3);
+										rect(this.x, this.y, this.width, this.height);
+										noStroke();
+										
+										pushMatrix();
+											translate(this.x, this.y);
+											rotate(radians(90));
+											
+											image(this.img, -this.width / 8, 0, this.widthO, this.heightO);
+										popMatrix();
+										
+										fill(this.col1);
+										textFont(createFont("Verdana Bold"), 20);
+										text("Cost: " + this.cost, this.x, this.y + this.width / 3);
+									}
+						        } // display method
+						        
+						        update() {
+						            if (this.toDisplay) {
+										this.hover();
+										this.click();
+									}
+									
+									var towerSelected = false;
+									
+									for (var i = towers.length - 1; i >= 0; i--) {
+										if (towers[i].selected) {
+											towerSelected = true;
+										}
+									}
+									
+									if (towerSelected) {
+										this.toDisplay = false;
+									} else {
+										this.toDisplay = true;
+									}
+						        } // update method
+							} // TowerButton class
+							
+						    class Tower {
+						        constructor(x, y, type, buttons, funcs) {
+						            this.x = x; // x
+									this.y = y; // y
+									
+									this.type = type || "";
+									
+									this.rot = 180;
+									
+									switch (type) {
+										case "reg":
+											this.reload = 20;
+											this.range = 150;
+										break;
+										case "cannon":
+											this.reload = 50;
+											this.range = 250;
+										break;
+										case "freeze":
+											this.reload = 50;
+											this.range = 180;
+										break;
+										case "lazer":
+											this.range = 220;
+										break;
+									}
+									
+									this.reloadTimer = 0;
+									
+									this.rangeObj = {
+										x: x,
+										y: y,
+										width: this.range * 2,
+										height: this.range * 2,
+									};
+									
+									this.lazer = {
+										x: x,
+										y: y,
+										x2: x,
+										y2: y + 800,
+										display: false,
+									};
+									
+									this.selected = false;
+									
+									this.buttons = buttons || null;
+									this.funcs = funcs || null;
+									
+									for (var i = 0; i < this.buttons.length; i++) {
+										this.buttons[i].func = this.funcs[i];
+									}
+									
+									this.damage = 0;
+									
+									switch (this.type) {
+										case "reg":
+											this.width = 107;
+											this.height = 292;
+											this.speed = 10;
+											this.damage = 0.7;
+										break;
+										case "cannon":
+											this.width = 229 * 8 / 9;
+											this.height = 313 * 8 / 9;
+											this.damage = 0.1;
+											this.triShot = false;
+										break;
+										case "freeze":
+											this.width = 222 * 12 / 13;
+											this.height = 327 * 12 / 13;
+											this.damage = 0;
+											this.pulseDamage = 0;
+										break;
+										case "lazer":
+											this.width = 121 * 1.1;
+											this.height = 313 * 1.1;
+											this.damage = 0.1;
+											this.side = false;
+										break;
+										case "nails":
+											this.width = 85;
+											this.height = 85;
+											this.spliced = false;
+											this.count = 10;
+										break;
+									}
+									
+									this.width /= 1.25;
+									this.height /= 1.25;
+									
+									this.onHover = false;
+									
+									this.placed = 0;
+									
+									this.upgradeValue = 0;
+						        } // constructor
+								
+								hover() {
+									if (dist(mouseX, mouseY, this.x, this.y) < 50) {
+										cursor("pointer");
+										this.onHover = true;
+									} else {
+										this.onHover = false;
+									}
+								} // hover method
+								
+								select() {
+									var multiHov = false;
+									for (var i = towers.length - 1; i >= 0; i--) {
+										if (towers.length < 2) {
+											multiHov = false;
+										} else {
+											if (towers[i].onHover && i !== towers.indexOf(this)) {
+												multiHov = true;
+											}
+										}
+									}
+									
+									if (multiHov) {
+										for (var i = towers.length - 1; i >= 0; i--) {
+											if (towers[i].onHover) {
+												if (dist(mouseX, mouseY, this.x, this.y) < dist(mouseX, mouseY, towers[i].x, towers[i].y) && clicked && mouseButton === LEFT && this.placed > 1) {
+													towers[i].selected = false;
+													this.selected = true;
+												}
+											}
+										}
+									} else {
+										if (dist(mouseX, mouseY, this.x, this.y) < 50 && clicked && mouseButton === LEFT && this.placed > 1) {
+											this.selected = true;
+										}
+									}
+								} // select method
+						        
+						        rotate(enemies) {
+									for (var i = enemies.length - 1; i >= 0; i--) {
+										let isClosest = true;
+										for (var j = enemies.length - 1; j >= 0; j--) {
+											if (i !== j && dist(this.x, this.y, enemies[i].x, enemies[i].y) >= dist(this.x, this.y, enemies[j].x, enemies[j].y) && dist(this.x, this.y, enemies[i].x, enemies[i].y) <= this.range && dist(this.x, this.y, enemies[j].x, enemies[j].y) <= this.range) {
+												isClosest = false;
+											}
+										}
+										if (isClosest && dist(this.x, this.y, enemies[i].x, enemies[i].y) <= this.range) {
+											var ang = atan2(enemies[i].y - this.y, enemies[i].x - this.x);
+											this.rot = lerp(this.rot, -((ang * 180 / Math.PI) - 90), 0.5);
+										}
+									}
+						        } // rotate method
+								
+								shoot(enemies) {
+									this.reloadTimer++;
+									
+									var num = 0;
+									for (var i = enemies.length - 1; i >= 0; i--) {
+										if (dist(this.x, this.y, enemies[i].x, enemies[i].y) < this.range) {
+											if (this.reloadTimer > this.reload) {
+												switch (this.type) {
+													case "reg":
+														bullets.push(new Bullet(this.x, this.y, this.rot, "useless", this.speed, this.damage, 0));
+													break;
+													case "quad":
+														for (var i = 0; i < 4; i++) {
+															bullets.push(new Bullet(this.x, this.y, i * 90));
+														}
+													break;
+													case "cannon":
+														if (this.triShot) {
+															bullets.push(new Cannon(this.x, this.y, this.rot, this.damage));
+															bullets.push(new Cannon(this.x, this.y, this.rot - 20, this.damage));
+															bullets.push(new Cannon(this.x, this.y, this.rot + 20, this.damage));
+														} else {
+															bullets.push(new Cannon(this.x, this.y, this.rot, this.damage));
+														}
+													break;
+													case "freeze":
+														bullets.push(new Bullet(this.x, this.y, this.rot, "toFreeze", this.speed, this.damage, this.pulseDamage));
+													break;
+												}
+												this.reloadTimer = 0;
+											}
+											num++;
+										}
+									}
+									if (num > 0) {
+										this.lazer.display = true;
+									} else {
+										this.lazer.display = false;
+									}
+								} // shoot method
+						        
+						        display() {
+									switch (this.type) {
+										case "reg":
+											pushMatrix();
+												translate(this.x, this.y);
+												rotate(radians(180 - this.rot));
+												
+												image(goldyImg, 0, 0, this.width * 1 / 2, this.height * 1 / 2);
+											popMatrix();
+										break;
+										case "quad":
+											fill(0, 0, 0);
+											noStroke();
+											rect(this.x, this.y, this.width / 2, this.height);
+											rect(this.x, this.y, this.width, this.height / 2);
+										break;
+										case "cannon":
+											pushMatrix();
+												translate(this.x, this.y);
+												rotate(radians(180 - this.rot));
+												
+												image(fatImg, 0, 0, this.width * 1 / 2, this.height * 1 / 2);
+											popMatrix();
+										break;
+										case "freeze":
+											pushMatrix();
+												translate(this.x, this.y);
+												rotate(radians(180 - this.rot));
+												
+												image(fish4Texture, 0, 0, this.width * 1 / 2, this.height * 1 / 2);
+											popMatrix();
+										break;
+										case "lazer":
+											if (this.lazer.display) {
+												stroke(255, 34, 0, 100);
+												strokeWeight(12);
+												line(this.lazer.x, this.lazer.y, this.lazer.x2, this.lazer.y2);
+												stroke(255, 34, 0, 255);
+												strokeWeight(5);
+												line(this.lazer.x, this.lazer.y, this.lazer.x2, this.lazer.y2);
+											}
+											noStroke();
+											pushMatrix();
+												translate(this.x, this.y);
+												rotate(radians(180 - this.rot));
+												
+												image(sharkImg, 0, 0, this.width * 1 / 2, this.height * 1 / 2);
+											popMatrix();
+										break;
+									}
+						        } // display method
+								
+								useLazer(arr) {
+									if (this.lazer.display) {
+										this.lazer.x2 = this.x + (1500 * cos(radians(-this.rot - 270)));
+										this.lazer.y2 = this.y + (1500 * sin(radians(-this.rot - 270)));
+										
+										if (this.side) {
+											this.lazer.x = this.x - (1500 * cos(radians(-this.rot - 270)));
+											this.lazer.y = this.y - (1500 * sin(radians(-this.rot - 270)));
+										}
+										
+										for (var i = arr.length - 1; i >= 0; i--) {
+											if (circleToLine(arr[i].x, arr[i].y, arr[i].width / 2, this.lazer.x, this.lazer.y, this.lazer.x2, this.lazer.y2)) {
+												arr[i].health -= this.damage;
+											}
+										}
+									}
+								} // useLazer method
+								
+								buttonsUpdate() {
+									if (this.selected && this.buttons !== null) {
+										for (var i = 0; i < this.buttons.length; i++) {
+											this.buttons[i].update();
+										}
+									}
+								} // buttonsUpdate method
+								
+								nailCollide(arr) {
+									for (var i = arr.length - 1; i >= 0; i--) {
+										var obj = arr[i];
+										
+										if (circleToRect(this.x, this.y, this.width / 2, obj.x, obj.y, obj.width, obj.height) && obj.img !== enemySpecial) {
+											if (this.spliced) {
+												obj.stop = false;
+											} else {
+												obj.stop = true;
+											}
+											
+											this.count--;
+											obj.health -= 0.4;
+										}
+									}
+								} // nailCollide method
+								
+								nailSpliced() {
+									if (this.count <= 0) {
+										this.spliced = true;
+									}
+								} // nailSpliced method
+								
+								nailDisplay() {
+									if (!this.spliced) {
+										image(nailImgs[this.count - 1], this.x, this.y, this.width, this.height);
+									}
+								} // nailDisplay method
+						        
+						        update(arr) {
+									if (this.type === "nails") {
+										this.nailSpliced();
+										this.nailDisplay();
+										this.nailCollide(arr);
+									} else {
+										this.select();
+										(this.type === "quad") ? rect(0, 0, 0, 0) : this.rotate(arr);
+										this.shoot(arr);
+										this.hover();
+										this.display();
+										(this.type === "lazer") ? this.useLazer(arr) : rect(0, 0, 0, 0);
+										this.placed++;
+									}
+						        } // update method
+						    } // Tower class
+							
+							function check(type) {
+								let stough = new TowerButton(0, 0, type, goldyImg, function() {});
+								return stough.cost;
+							}
+							
+						    class Enemy {
+						        constructor(x, y, speed, health, img, width, height) {
+						            this.x = x; // x
+									this.y = y; // y
+									
+									this.speed = speed || 2;
+									this.speedd = speed;
+									this.slow = this.speed / 3;
+									this.fast = this.speed * 3 / 2;
+									this.rot = 0;
+									this.rotation = 0;
+									
+									this.img = img;
+									this.width = width;
+									this.height = height;
+									
+									this.trackNum = -1;
+									
+									this.timer = 0;
+									this.helth = health * 4 / 2;
+									this.health = health * 4 / 2 || 10;
+									
+									this.freeze = 0;
+									this.stop = false;
+									this.speedUp = 0;
+						        } // constructor
+								
+								checkTrackPoint() {
+									if (this.trackNum + 1 < track.length) {
+										if (dist(this.x, this.y, track[this.trackNum + 1].x, track[this.trackNum + 1].y) <= 3) {
+											this.trackNum++;
+										}
+									}
+								} // checkTrackPoint
+						        
+						        rotate() {
+									if (this.trackNum >= 0 && this.trackNum + 1 < track.length) {
+										var ang = atan2(track[this.trackNum + 1].y - /*track[this.trackNum]*/this.y, track[this.trackNum + 1].x - /*track[this.trackNum]*/this.x);
+										this.rot = (abs(-((ang * 180 / Math.PI) - 90)) > 180 * 180 / Math.PI) ? 180 * 180 / Math.PI + ((ang * 180 / Math.PI) - 90) : -((ang * 180 / Math.PI) - 90);
+										this.rotation = lerp(this.rotation, /*(abs(-((ang * 180 / Math.PI) - 90)) >= 180) ? 128.5 + ((ang * 180 / Math.PI) - 90) : -((ang * 180 / Math.PI) - 90)*/ (this.rot > 180) ? 180 - this.rot - 37 : this.rot, 0.1);
+									}
+						        } // rotate method
+								
+								move() {
+									this.x += sin(radians(this.rot)) * this.speed;
+									this.y += cos(radians(this.rot)) * this.speed;
+								} // move method
+						        
+						        display() {
+						            pushMatrix();
+										translate(this.x, this.y);
+										// rotate(radians(-this.rotation));
+										
+										image(this.img, 0, 0, this.width, this.height);
+										
+										rectMode(CORNER);
+										fill(0, 255, 0);
+										rect(0 - this.width / 3, -this.height * 2 / 2, (this.width * 2 / 3) * this.health / this.helth, 12 * this.height / (154 / 3));
+										rectMode(CENTER);
+									popMatrix();
+						        } // display method
+								
+								toFreeze() {
+									if (this.freeze > 0) {
+										if (!this.stop) {
+											this.speed = this.slow;
+										}
+									} else if (this.speedUp > 0) {
+										this.speed = this.fast;
+									} else {
+										this.speed = this.speedd;
+									}
+									
+									this.speedUp--;
+									this.freeze--;
+								} // toFreeze method
+						        
+						        update() {
+									if (this.health > this.helth) {
+										this.health = this.helth;
+									}
+									
+						            // call other methods
+						            this.checkTrackPoint();
+									this.rotate();
+									this.move();
+									this.display();
+									this.toFreeze();
+									
+									if (this.stop) {
+										this.speed = 0;
+									}
+						        } // update method
+						    } // Enemy class
+						    
+							class UpdateButton {
+								constructor(x, y, text, cost, cap) {
+									this.x = x;
+									this.y = y;
+									
+									this.width = 125 * 1.25;
+									this.height = 100 * 1.25;
+									
+									this.text = text;
+									this.cost = cost;
+									this.cap = cap;
+									this.gotClick = 0;
+									this.func = null;
+									this.bought = false;
+									
+									this.col1 = color(186, 206, 214);
+									this.col2 = color(43, 56, 61);
+								} // constructor
+								
+								hover() {
+									if (this.gotClick < this.cap && (!(this.text === "Sell\ntower.") ? mone >= this.cost : mone >= -1)) {
+										if (pointToRect(mouseX, mouseY, this.x, this.y, this.width, this.height)) {
+											cursor("pointer")
+											this.col1 = lerpColor(this.col1, color(43, 56, 61), 0.1);
+											this.col2 = lerpColor(this.col2, color(186, 206, 214), 0.1);
+										} else {
+											this.col1 = lerpColor(this.col1, color(186, 206, 214), 0.1);
+											this.col2 = lerpColor(this.col2, color(43, 56, 61), 0.1);
+										}
+									} else {
+										if (pointToRect(mouseX, mouseY, this.x, this.y, this.width, this.height)) {
+											cursor("not-allowed");
+										}
+										this.col1 = lerpColor(this.col1, color(186, 206, 214), 0.1);
+										this.col2 = lerpColor(this.col2, color(43, 56, 61), 0.1);
+									}
+								} // hover method
+								
+								click() {
+									if (pointToRect(mouseX, mouseY, this.x, this.y, this.width, this.height) && clicked && mouseButton === LEFT && (!(this.text === "Sell\ntower.") ? mone >= this.cost : mone >= -1)) {
+										(this.func !== null && this.gotClick < this.cap) ? this.func() : rect(0, 0, 0, 0);
+										this.gotClick++;
+									}
+								} // click method
+								
+								display() {
+									if (this.text === "Sell\ntower.") {
+										for (var i = 0; i < towers.length; i++) {
+											if (towers[i].selected) {
+												this.cost = round((check(towers[i].type) + towers[i].upgradeValue) * 3 / 4);
+											}
+										}
+									}
+									
+									stroke(186, 206, 214);
+									fill(this.col2);
+									strokeWeight(3);
+									rect(this.x, this.y, this.width, this.height);
+									
+									noStroke();
+									textFont(createFont("Verdana"), 20);
+									fill(this.col1);
+									text(this.text, this.x, this.y - this.width / 10);
+									
+									textFont(createFont("Verdana Bold"), 20);0
+									if (this.gotClick < this.cap) {
+										if (this.text === "Sell\ntower.") {
+											text("Refund: " + this.cost, this.x, this.y + this.width / 5);
+										} else {
+											text("Cost: " + this.cost, this.x, this.y + this.width / 5);
+										}
+									} else {
+										text("Maxed out", this.x, this.y + this.width / 5);
+									}
+								} // display method
+								
+								update() {
+									this.hover();
+									this.click();
+									this.display();
+								} // update method
+							} // UpdateButton class
+							
+							class Onward {
+								constructor(text) {
+									this.text = text;
+									
+									this.col1 = color(33, 46, 71, 0);
+									this.col2 = color(186, 206, 214, 0);
+									
+									this.didclik = false;
+									this.thign = 0;
+									this.spliced = false;
+									this.yOff = -200;
+								} // constructor
+								
+								click() {
+									if (clicked && this.yOff > -1) {
+										this.didclik = true;
+									}
+								}
+								
+								clr() {
+									if (!this.didclik) {
+										this.col1 = lerpColor(this.col1, color(33, 46, 71, 200), 0.1);
+										this.col2 = lerpColor(this.col2, color(186, 206, 214, 255), 0.1);
+										this.thign = lerp(this.thign, 200, 0.1);
+										this.yOff = lerp(this.yOff, 0, 0.1);
+									} else {
+										this.col1 = lerpColor(this.col1, color(33, 46, 71, 0), 0.1);
+										this.col2 = lerpColor(this.col2, color(186, 206, 214, 0), 0.1);
+										this.thign = lerp(this.thign, 0, 0.09);
+										this.yOff = lerp(this.yOff, 200, 0.1);
+									}
+								}
+								
+								toSplice() {
+									if (this.didclik && this.thign < 1) {
+										this.spliced = true;
+										onWav = true;
+										countWav = 0;
+										wave++;
+									}
+								}
+								
+								display() {
+									fill(this.col1);
+									rect(width / 2, height / 2, width + 50, height + 50);
+									
+									fill(this.col2);
+									textFont(createFont("Verdana Bold"), 50);
+									text(this.text, width / 2, height / 2 + this.yOff);
+								} // display method
+								
+								update() {
+									this.click();
+									this.clr();
+									this.toSplice();
+									this.display();
+								} // update method
+							} // Onward class
+							
+							class Button {
+								constructor(x, y, size, type, func) {
+						            this.x = x;
+									this.y = y;
+									
+									this.size = size;
+									this.type = type;
+									this.func = func;
+									this.rot = 0;
+									this.blurAmt = 5;
+									this.blurStrength = 10;
+									this.amt1 = 0;
+									this.amt2 = 0;
+									this.amt3 = 0;
+									
+									// color(186, 206, 214), color(43, 56, 61),
+									
+									this.clr1 = color(217, 255, 252, 150);
+									this.clr2 = color(0, 49, 59);
+									this.col1 = this.clr1;
+									this.col2 = this.clr2;
+						        } // constructor
+						        
+						        hover() {
+									if (pointToEllipse(mouseX, mouseY, this.x, this.y, this.size, this.size)) {
+										/*this.col1 = lerpColor(this.col1, this.clr2, 0.1);
+										this.col2 = lerpColor(this.col2, this.clr1, 0.1);*/
+										if (this.type === "play" || this.type === "how") {
+											this.rot = lerp(this.rot, 360, 0.1);
+										} else if (this.type === "lead") {
+											this.amt1 = sin(1 * 20 - (frameCount / 20)) * 15;
+											this.amt2 = sin(6 * 20 - (frameCount / 20)) * 8;
+											this.amt3 = sin(9 * 20 - (frameCount / 20)) * 20;
+										}
+										this.blurStrength = lerp(this.blurStrength, 40, 0.1);
+										this.blurAmt = lerp(this.blurAmt, 7, 0.1);
+										cursor("pointer");
+									} else {
+										/*this.col1 = lerpColor(this.col1, this.clr1, 0.1);
+										this.col2 = lerpColor(this.col2, this.clr2, 0.1);*/
+										if (this.type === "play" || this.type === "how") {
+											this.rot = lerp(this.rot, 0, 0.1);
+										} else if (this.type === "lead") {
+											this.amt1 = 0;
+											this.amt2 = 0;
+											this.amt3 = 0;
+										}
+										this.blurStrength = lerp(this.blurStrength, 30, 0.1);
+										this.blurAmt = lerp(this.blurAmt, 5, 0.1);
+									}
+						        } // hover method
+								
+								click() {
+									if (pointToEllipse(mouseX, mouseY, this.x, this.y, this.size, this.size) && clicked && transitions.length === 0) {
+										let func = this.func;
+										
+										transitions.push(new Transition(function() {
+											func();
+										}));
+									}
+								} // click method
+						        
+						        display() {
+									for (var i = 0; i < this.blurAmt; i++) {
+										noFill();
+										stroke(this.col2, this.blurStrength * (this.blurAmt - i) * 0.3);
+										ellipse(this.x, this.y, this.size + i * 2 * (this.size / 100), this.size + i * 2 * (this.size / 100));
+									}
+									
+									fill(this.col1);
+									ellipse(this.x, this.y, this.size, this.size);
+									
+									noStroke();
+									fill(this.col2);
+									switch (this.type) {
+										case "play":
+											pushMatrix();
+												translate(this.x, 0 + this.y);
+												rotate(radians(this.rot));
+												triangle(0 - this.size / 4 + 8.9, 0 + this.size / 3, 0 - this.size / 4 + 8.9, 0 - this.size / 3, 0 + 75.3 + 8.9, 0);
+											popMatrix();
+										break;
+										case "how":
+											pushMatrix();
+												translate(this.x, this.y);
+												rotate(radians(this.rot));
+												textFont(createFont("Verdana Bold"), this.size * 2 / 3);
+												text("?", 0, 0);
+											popMatrix();
+										break;
+										case "lead":
+											or(this.x - this.size / 5, this.y + this.size / 4, this.size / 6, this.size / 4 + this.amt1);
+											or(this.x, this.y + this.size / 4, this.size / 6, this.size * 1 / 2 + this.amt2);
+											or(this.x + this.size / 5, this.y + this.size / 4, this.size / 6, this.size * 3 / 8 + this.amt3);
+										break;
+										case "back":
+											triangle(this.x - this.size * 23 / 60, this.y, this.x - this.size * 0.75 / 6, this.y - this.size * 30 / 100, this.x - this.size * 0.75 / 6, this.y + this.size * 30 / 100);
+											rect(this.x + this.size / 10, this.y, this.size / 2, this.size * 0.8 / 3);
+										break;
+									}
+						        } // display method
+						        
+						        update() {
+						            this.hover();
+									this.display();
+									this.click();
+						        } // update method
+							}
+						// }
+				        // buttons {
+				        	var start = 120;
+							var towerbuttons = [
+								new TowerButton(start, height + 100, "reg", goldyImg, function() {
+										tMouse.canPlace = true;
+										tMouse.tower = "reg";
+									}, {
+										width: 230,
+										height: 125,
+										text: "This is the goldfish.\nYour average fish,\n Spits one bullet.",
+									}
+								), new TowerButton(start + ((1000 - start - start) / 4) * 1, height + 100, "cannon", fatImg, function() {
+										tMouse.canPlace = true;
+										tMouse.tower = "cannon";
+									}, {
+										width: 250,
+										height: 130,
+										text: "This is the fat fish.\nSpits out cannonballs,\ncan be upgraded\nto spit three of them.",
+									}
+								), new TowerButton(start + ((1000 - start - start) / 4) * 2, height + 100, "freeze", fish4Texture, function() {
+										tMouse.canPlace = true;
+										tMouse.tower = "freeze";
+									}, {
+										width: 330,
+										height: 130,
+										text: "This is the freeze fish. It spits\nbullets, and they create a\nfreeze pulse on contact with\nan enemy.",
+									}
+								), new TowerButton(start + ((1000 - start - start) / 4) * 3, height + 100, "lazer", sharkImg, function() {
+										tMouse.canPlace = true;
+										tMouse.tower = "lazer";
+									}, {
+										width: 300,
+										height: 125,
+										text: "This is the shark.\n A legendary createture\nfrom the deep, it spits\nout a red-hot inferno.",
+									}
+								), new TowerButton(1000 - start, height + 100, "nails", nailImgs[9], function() {
+										tMouse.canPlace = true;
+										tMouse.tower = "nails";
+									}, {
+										width: 250,
+										height: 150,
+										text: "This is a package\nof 10 nails.\nEach nail has a\none life use and\ndoes one damage.",
+									}
+								),
+							];
+							
+							buttons = [
+								new Button(500, 480 - 50, 230, "play", function() {
+									scene = "play";
+								}),
+								new Button(300, 600 - 50, 130, "how", function() {
+									scene = "how";
+								}),
+								new Button(700, 600 - 50, 130, "lead", function() {
+									scene = "lead";
+								}),
+								new Button(120, 680, 100, "back", function() {
+									scene = "menu";
+								}),
+							];
+				        // }
+						// game related stuffs {
+							function showTrack(track) {
+								strokeJoin(ROUND);
+								noFill();
+								stroke(0, 0, 0, 100);
+								strokeWeight(75);
+								noFill();
+								beginShape();
+									for (var i = track.length - 1; i >= 0; i--) {
+										vertex(track[i].x, track[i].y);
+									}
+								endShape();
+								noStroke();
+							}
+							
+							var enemyTypes = {
+								reg: function(x, y) {
+									return new Enemy(x, y, 2, 10, enemyNormal, 272 * 1 / 3, 154 * 1 / 3);
+								},
+								speed: function(x, y) {
+									return new Enemy(x, y, 5, 5, enemyFast, 272 * 1 / 4, 154 * 1 / 4);
+								},
+								fat: function(x, y) {
+									return new Enemy(x, y, 1, 20, enemySlow, 272 * 1 / 2, 133 * 1 / 2);
+								},
+								special: function(x, y) {
+									return new Enemy(x, y, 2, 10, enemySpecial, 272 * 1 / 3, 154 * 1 / 3);
+								},
+							};
+							
+							var waves = [
+								[
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								], [
+									enemyTypes.reg(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.fat(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+									enemyTypes.speed(-50, -50),
+									enemyTypes.special(-50, -50),
+								],
+							];
+							
+							var owards = [
+								"hi",
+								"hello",
+								"good morning",
+								"nop",
+							];
+							
+							onwards.push(new Onward(owards[0]));
+						// }
+						var logoY = 0;
+						var logoTrans = 0;
+						var logoTrans2 = 255;
+						var logoTimer = 0;
+						var logoPhase1 = true;
+						var otherLogoThing = false;
+				        // scenes {
+				        	var Scenes = {
+				        		"logo": function() {
+									background(0, 0, 0);
+									
+									textFont(createFont("Old English Text MT"), 200);
+									fill(255, 255, 255, logoTrans);
+									text("T", 400, 200 + logoY);
+									text("N", 600, 600 - logoY);
+									
+									if (logoTimer > 5 && logoPhase1) {
+										logoY = lerp(logoY, 180, 0.07);
+										logoTrans = lerp(logoTrans, 255, 0.07);
+									}
+									
+									if (logoY > 179) {
+										logoPhase1 = false;
+										logoY = lerp(logoY, 400, 0.07);
+										logoTrans = lerp(logoTrans, 0, 0.07);
+									}
+									
+									if (logoY > 398) {
+										anim(function() {
+											if (logoTrans2 < 0) {
+												if (!otherLogoThing) {
+													anims = [];
+												}
+												logoTrans2 = 0;
+												otherLogoThing = true;
+											}
+											logoTrans2 = lerp(logoTrans2, 0, 0.07);
+										});
+										scene = "menu";
+									}
+									
+									logoTimer++;
+								}, "menu": function() {
+									image(bkg, 500, 400, 1000, 800);
+									
+									strokeWeight(4);
+									// textFont(createFont("Kristen ITC Bold"), 130);
+									/*
+									Covered By Your Grace
+									Gochi Hand
+									Mali
+									Short Stack
+									*/
+									textfont("Mali", 150, "bold");
+									let t = "F I S H  T D";
+									
+									for (var i = 0; i < t.length; i++) {
+										let start = 290;
+										let rot = start + (i * (360 - start) * 2 / (t.length - 1));
+										let ang = rot - 270;
+										let da = 200 + sin(i * 20 - (frameCount / 20)) * 3;
+										
+										pushMatrix();
+											translate(-cos(radians(ang)) * da - (((rot <= 360) ? sq(360 - rot) : -sq(360 - rot)) / 130) - (360 - rot) * 1, -sin(radians(ang)) * da);
+											
+											pushMatrix();
+												translate(500, 350);
+												rotate(radians(rot));
+												ot(t[i], 0, 0, [255, 255, 255, 100], [255, 255, 255, 255]);
+											popMatrix();
+										popMatrix();
+									}
+									
+									for (var i = 0; i < buttons.length - 1; i++) {
+										buttons[i].update();
+									}
+									
+									fill(0, 0, 0, logoTrans2);
+									rect(width / 2, height / 2, width + 200, height + 200);
+								}, "how": function() {
+									image(bkg, 500, 400, 1000, 800);
+									
+									strokeWeight(3);
+									textfont("Mali", 120, "bold");
+									let t = "H O W";
+									
+									for (var i = 0; i < t.length; i++) {
+										let start = 330;
+										let rot = start + (i * (360 - start) * 2 / (t.length - 1));
+										let ang = rot - 270;
+										let da = 200 + sin(i * 20 - (frameCount / 20)) * 3;
+										
+										pushMatrix();
+											translate(-cos(radians(ang)) * da - (((rot <= 360) ? sq(360 - rot) : -sq(360 - rot)) / 130) - (360 - rot) * 1, -sin(radians(ang)) * da);
+											
+											pushMatrix();
+												translate(500, 330);
+												rotate(radians(rot));
+												ot(t[i], 0, 0, [255, 255, 255, 100], [255, 255, 255, 255]);
+											popMatrix();
+										popMatrix();
+									}
+									
+									buttons[3].update();
+								}, "lead": function() {
+									image(bkg, 500, 400, 1000, 800);
+									
+									strokeWeight(3);
+									textfont("Mali", 120, "bold");
+									let t = "L E A D";
+									
+									for (var i = 0; i < t.length; i++) {
+										let start = 320;
+										let rot = start + (i * (360 - start) * 2 / (t.length - 1));
+										let ang = rot - 270;
+										let da = 200 + sin(i * 20 - (frameCount / 20)) * 3;
+										
+										pushMatrix();
+											translate(-cos(radians(ang)) * da - (((rot <= 360) ? sq(360 - rot) : -sq(360 - rot)) / 130) - (360 - rot) * 1, -sin(radians(ang)) * da);
+											
+											pushMatrix();
+												translate(500, 330);
+												rotate(radians(rot));
+												ot(t[i], 0, 0, [255, 255, 255, 100], [255, 255, 255, 255]);
+											popMatrix();
+										popMatrix();
+									}
+									
+									buttons[3].update();
+								}, "play": function() {
+									image(bkg, 500, 400, 1000, 800);
+									
+									if (onWav) {
+										if (enemies.length === 0 && countWav >= waves[wave].length - 1) {
+											countWav = 0;
+											onWav = false;
+											onwards.push(new Onward(owards[wave]));
+										} else {
+											if (frameCount % 100 === 0) {
+												if (countWav < waves[wave].length - 1) {
+													enemies.push(waves[wave][countWav]);
+													countWav += 1;
+												}
+											}
+										}
+									}
+									
+									if (!onWav) {
+										if (onwards[0].yOff > height / 2) {
+											if (pointToRect(mouseX, mouseY, width / 2, height - 75 + dashY, width, 250) || pointToRect(mouseX, mouseY, width / 2, height - 220 + dashY, 120, 60)) {
+												anims = [];
+												anim(function() {
+													dashY = lerp(dashY, -50, 0.1);
+													for (var i = towerbuttons.length - 1; i >= 0; i--) {
+														towerbuttons[i].y = lerp(towerbuttons[i].y, height - 150 + 60, 0.1);
+													}
+													for (var i = towers.length - 1; i >= 0; i--) {
+														for (var j = towers[i].buttons.length - 1; j >= 0; j--) {
+															towers[i].buttons[j].y = lerp(towers[i].buttons[j].y, height - 150 + 60, 0.1);
+														}
+													}
+												});
+											} else {
+												anims = [];
+												anim(function() {
+													dashY = lerp(dashY, 200, 0.1);
+													for (var i = towerbuttons.length - 1; i >= 0; i--) {
+														towerbuttons[i].y = lerp(towerbuttons[i].y, height + 125 + 60, 0.1);
+													}
+													for (var i = towers.length - 1; i >= 0; i--) {
+														for (var j = towers[i].buttons.length - 1; j >= 0; j--) {
+															towers[i].buttons[j].y = lerp(towers[i].buttons[j].y, height + 125 + 60, 0.1);
+														}
+													}
+												});
+											}
+										} else {
+											anims = [];
+											anim(function() {
+												dashY = lerp(dashY, 200, 0.1);
+												for (var i = towerbuttons.length - 1; i >= 0; i--) {
+													towerbuttons[i].y = lerp(towerbuttons[i].y, height + 125 + 60, 0.1);
+												}
+												for (var i = towers.length - 1; i >= 0; i--) {
+													for (var j = towers[i].buttons.length - 1; j >= 0; j--) {
+														towers[i].buttons[j].y = lerp(towers[i].buttons[j].y, height + 125 + 60, 0.1);
+													}
+												}
+											});
+										}
+									} else {
+										if (pointToRect(mouseX, mouseY, width / 2, height - 75 + dashY, width, 250) || pointToRect(mouseX, mouseY, width / 2, height - 220 + dashY, 120, 60)) {
+											anims = [];
+											anim(function() {
+												dashY = lerp(dashY, -50, 0.1);
+												for (var i = towerbuttons.length - 1; i >= 0; i--) {
+													towerbuttons[i].y = lerp(towerbuttons[i].y, height - 150 + 60, 0.1);
+												}
+												for (var i = towers.length - 1; i >= 0; i--) {
+													for (var j = towers[i].buttons.length - 1; j >= 0; j--) {
+														towers[i].buttons[j].y = lerp(towers[i].buttons[j].y, height - 150 + 60, 0.1);
+													}
+												}
+											});
+										} else {
+											anims = [];
+											anim(function() {
+												dashY = lerp(dashY, 200, 0.1);
+												for (var i = towerbuttons.length - 1; i >= 0; i--) {
+													towerbuttons[i].y = lerp(towerbuttons[i].y, height + 125 + 60, 0.1);
+												}
+												for (var i = towers.length - 1; i >= 0; i--) {
+													for (var j = towers[i].buttons.length - 1; j >= 0; j--) {
+														towers[i].buttons[j].y = lerp(towers[i].buttons[j].y, height + 125 + 60, 0.1);
+													}
+												}
+											});
+										}
+									}
+									
+									showTrack(track);
+									
+									for (var i = towers.length - 1; i >= 0; i--) {
+										if (towers[i].selected) {
+											fill(0, 0, 0, 80);
+											ellipse(towers[i].rangeObj.x, towers[i].rangeObj.y, towers[i].rangeObj.width, towers[i].rangeObj.height);
+										} else if (towers[i].onHover) {
+											fill(0, 0, 0, 30);
+											ellipse(towers[i].rangeObj.x, towers[i].rangeObj.y, towers[i].rangeObj.width, towers[i].rangeObj.height);
+										}
+									}
+									
+									for (var i = enemies.length - 1; i >= 0; i--) {
+										enemies[i].update();
+										
+										if (enemies[i].health <= 0) {
+											if (enemies[i].img === enemySpecial) {
+												for (var j = 0; j < 20; j++) {
+													particles.push(new Particle(enemies[i].x + random(-10, 10), enemies[i].y + random(-10, 10), 25, 0.5, random(-2, 2), random(-2.5, 0.5), 0.08, "rect", (floor(random(0, 2)) === 0) ? color(167 + 15, 131 + 15, 196 + 15) : color(167 + 60, 131 + 60, 196 + 60), 3));
+												}
+												particles.push(new Particle(enemies[i].x, enemies[i].y - 5, 30, 0, 0, -1, 0.01, "text", color(167 + 40, 131 + 40, 196 + 40), 4, "+25"));
+												mone += 25;
+											} else {
+												for (var j = 0; j < 20; j++) {
+													particles.push(new Particle(enemies[i].x + random(-10, 10), enemies[i].y + random(-10, 10), 25, 0.5, random(-2, 2), random(-2.5, 0.5), 0.08, "rect", (floor(random(0, 2)) === 0) ? color(208, 179, 135) : color(208 + 50, 179 + 50, 135 + 50), 3));
+												}
+												if (enemies[i].img === enemyFast) {
+													particles.push(new Particle(enemies[i].x, enemies[i].y - 5, 30, 0, 0, -1, 0.01, "text", color(208 + 35, 179 + 35, 135 + 35), 4, "+10"));
+													mone += 10;
+												} else if (enemies[i].img === enemyNormal) {
+													particles.push(new Particle(enemies[i].x, enemies[i].y - 5, 30, 0, 0, -1, 0.01, "text", color(208 + 35, 179 + 35, 135 + 35), 4, "+10"));
+													mone += 10;
+												} else if (enemies[i].img === enemySlow) {
+													particles.push(new Particle(enemies[i].x, enemies[i].y - 5, 30, 0, 0, -1, 0.01, "text", color(208 + 35, 179 + 35, 135 + 35), 4, "+20"));
+													mone += 20;
+												}
+											}
+											
+											enemies.splice(i, 1);
+										} else if (enemies[i].y > 800) {
+											if (enemies[i].img === enemyFast) {
+												healthLeft -= 1;
+											} else if (enemies[i].img === enemyNormal) {
+												healthLeft -= 2;
+											} else if (enemies[i].img === enemySlow) {
+												healthLeft -= 5;
+											} else if (enemies[i].img === enemySpecial) {
+												healthLeft -= 5;
+											}
+											
+											enemies.splice(i, 1);
+										}
+									}
+									
+									for (var i = bullets.length - 1; i >= 0; i--) {
+										bullets[i].update(enemies);
+										
+										if (bullets[i].spliced) {
+											bullets.splice(i, 1);
+										}
+									}
+									
+									for (var i = towers.length - 1; i >= 0; i--) {
+										towers[i].display();
+										if (onWav) {
+											towers[i].update(enemies);
+											if (towers[i].type === "nails" && towers[i].spliced) {
+												towers.splice(i, 1);
+											}
+											if (clicked && dist(mouseX, mouseY, towers[i].x, towers[i].y) > 50 && !(((pointToRect(mouseX, mouseY, width / 2, height - 75 + dashY, width, 250) || pointToRect(mouseX, mouseY, width / 2, height - 220 + dashY, 120, 60))))) {
+												towers[i].selected = false;
+											}
+										}
+									}
+									
+									for (var i = particles.length - 1; i >= 0; i--) {
+										particles[i].update();
+										if (particles[i].spliced) {
+											particles.splice(i, 1);
+										}
+									}
+									
+									fill(43, 56, 61);
+									rect(width / 2, height - 75 + dashY, width, 250);
+									rect(width / 2, height - 220 + dashY, 120, 60);
+									fill(186, 206, 214);
+									textFont(createFont("Verdana Bold"), 28);
+									text("$" + mone, width / 2, height - 225 + dashY + 70);
+									text("Health: " + healthLeft, width / 2 - 220, height - 225 + dashY + 70);
+									text("Wave: " + wave, width / 2 + 220, height - 225 + dashY + 70);
+									stroke(186, 206, 214);
+									strokeWeight(2);
+									line(0, height - 225 + dashY + 90, width, height - 225 + dashY + 90);
+									line(0, height - 225 + dashY + 50, width, height - 225 + dashY + 50);
+									strokeWeight(2);
+									fill(43, 56, 61);
+									for (var i = 0; i < 3; i++) {
+										let amt = 25;
+										ellipse(width / 2 + (i - 1) * amt, height - 220 + dashY - 3, 15, 15);
+									}
+									noStroke();
+									
+									for (var i = towerbuttons.length - 1; i >= 0; i--) {
+										towerbuttons[i].display();
+									}
+									
+									for (var i = towerbuttons.length - 1; i >= 0; i--) {
+										towerbuttons[i].update();
+									}
+									
+									for (var i = towers.length - 1; i >= 0; i--) {
+										towers[i].buttonsUpdate();
+									}
+									
+									if (tMouse.tower !== null) {
+										switch (tMouse.tower) {
+											case "reg":
+												image(goldyImg, mouseX, mouseY, 107 * 2 / 5, 292 * 2 / 5);
+											break;
+											case "cannon":
+												image(fatImg, mouseX, mouseY, 229 * (2 / 5) * (8 / 9), 313  * (2 / 5) * (8 / 9));
+											break;
+											case "freeze":
+												image(fish4Texture, mouseX, mouseY, 222 * (2 / 5) * (12 / 13), 327 * (2 / 5) * (12 / 13));
+											break;
+											case "lazer":
+												image(sharkImg, mouseX, mouseY, 121 * 1.1 * 2 / 5, 313 * 1.1 * 2 / 5);
+											break;
+											case "nails":
+												image(nailImgs[9], mouseX, mouseY, 85 / 1.25, 85 / 1.25);
+											break;
+										}
+									}
+									
+									for (var i = onwards.length - 1; i >= 0; i--) {
+										onwards[i].update();
+										if (onwards[i].spliced) {
+											onwards.splice(i, 1);
+										}
+									}
+								},
+				        	}; // Scenes object
+				        // }
+				        // processing.js functions {
+				        	draw = function() {
+								cursor("default"); // reset cursor before each frame
+								
+								Scenes[scene]();
+								
+								for (var i = transitions.length - 1; i >= 0; i--) {
+									transitions[i].update();
+									if (transitions[i].spliced) {
+										transitions.splice(i, 1);
+									}
+								}
+								
+								for (var i = anims.length - 1; i >= 0; i--) {
+									anims[i]();
+								}
+								
+								clicked = false; // at the end of each frame reset clicked
+				        	}; // draw each frame
+							
+							mouseClicked = function() {
+				        		clicked = true; // make clicked true
+								
+								switch (scene) {
+									case "play":
+										if (mouseButton === LEFT) {
+											var otherCanPlace = true;
+											var otherCanPlace2 = true;
+											for (var i = track.length - 2; i >= 0; i--) {
+												if (circleToLine(mouseX, mouseY, 80, track[i].x, track[i].y, track[i + 1].x, track[i + 1].y)) {
+													otherCanPlace = false;
+												}
+												if (circleToLine(mouseX, mouseY, 30, track[i].x, track[i].y, track[i + 1].x, track[i + 1].y)) {
+													otherCanPlace2 = false;
+												}
+											}
+											
+											if (tMouse.tower === "nails") {
+												if (tMouse.canPlace && !((pointToRect(mouseX, mouseY, width / 2, height - 75 + dashY, width, 250) || pointToRect(mouseX, mouseY, width / 2, height - 220 + dashY, 120, 60))) && mone >= check(tMouse.tower)) {
+													if (!otherCanPlace2) {
+														/*var dists = [];
+														for (var i = 0; i < track.length - 1; i++) {
+															dists.push(pointLineDist(mouseX, mouseY, track[i].x, track[i].y, track[i + 1].x, track[i + 1].y).dist);
+														}
+														
+														var distss = dists;
+														distss.sort(function(a, b) {
+															return a - b;
+														});
+														
+														var ind = dists.indexOf(distss[0]);
+														
+														towers.push(new Tower(pointLineDist(mouseX, mouseY, track[ind].x, track[ind].y, track[ind + 1].x, track[ind + 1].y).point.x, pointLineDist(mouseX, mouseY, track[ind].x, track[ind].y, track[ind + 1].x, track[ind + 1].y).point.y, tMouse.tower, [], []));*/
+														towers.push(new Tower(mouseX, mouseY, tMouse.tower, [], []));
+														mone -= check(tMouse.tower);
+														tMouse.canPlace = false;
+														tMouse.tower = null;
+													}
+												}
+											} else {
+												if (tMouse.canPlace && !((pointToRect(mouseX, mouseY, width / 2, height - 75 + dashY, width, 250) || pointToRect(mouseX, mouseY, width / 2, height - 220 + dashY, 120, 60))) && otherCanPlace && mone >= check(tMouse.tower)) {
+													let start = 170;
+													let start2 = 240;
+													switch (tMouse.tower) {
+														case "reg":
+															towers.push(new Tower(mouseX, mouseY, tMouse.tower, [
+																new UpdateButton(start, height + 100, "Decrease\nreload.", 20, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3), height + 100, "Increase\nspeed.", 10, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3) * 2, height + 100, "Increase\ndamage.", 25, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3) * 3, height + 100, "Sell\ntower.", -50, 1),
+															], [
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].reload -= 2;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].speed += 2;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].damage += 0.15;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			mone += round((check(towers[i].type) + towers[i].upgradeValue) * 3 / 4);
+																			towers.splice(i, 1);
+																		}
+																	}
+																},
+															]));
+														break;
+														case "cannon":
+															towers.push(new Tower(mouseX, mouseY, tMouse.tower, [
+																new UpdateButton(start, height + 100, "Decrease\nreload.", 20, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3), height + 100, "Increase\ndamage.", 25, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3) * 2, height + 100, "Triple\nshots.", 85, 1),
+																new UpdateButton(start + ((1000 - start - start) / 3) * 3, height + 100, "Sell\ntower.", -50, 1),
+															], [
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].reload -= 2.8;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].damage += 0.05;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].triShot = true;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			mone += round((check(towers[i].type) + towers[i].upgradeValue) * 3 / 4);
+																			towers.splice(i, 1);
+																		}
+																	}
+																},
+															]));
+														break;
+														case "freeze":
+															towers.push(new Tower(mouseX, mouseY, tMouse.tower, [
+																new UpdateButton(start, height + 100, "Decrease\nreload.", 20, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3), height + 100, "Bullet\ndamage.", 25, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3) * 2, height + 100, "Pulse\ndamage.", 20, 5),
+																new UpdateButton(start + ((1000 - start - start) / 3) * 3, height + 100, "Sell\ntower.", -50, 1),
+															], [
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].reload -= 2.5;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].damage += 0.1;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].pulseDamage += 0.02;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			mone += round((check(towers[i].type) + towers[i].upgradeValue) * 3 / 4);
+																			towers.splice(i, 1);
+																		}
+																	}
+																},
+															]));
+														break;
+														case "lazer":
+															towers.push(new Tower(mouseX, mouseY, tMouse.tower, [
+																new UpdateButton(start2, height + 100, "Increase\ndamage.", 35, 5),
+																new UpdateButton(start2 + ((1000 - start2 - start2) / 2) * 1, height + 100, "Double\nsided.", 90, 1),
+																new UpdateButton(start2 + ((1000 - start2 - start2) / 2) * 2, height + 100, "Sell\ntower.", -50, 1),
+															], [
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].damage += 0.05;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			towers[i].side = true;
+																			towers[i].upgradeValue += this.cost;
+																			mone -= this.cost;
+																		}
+																	}
+																},
+																function() {
+																	for (var i = 0; i < towers.length; i++) {
+																		if (towers[i].selected) {
+																			mone += round((check(towers[i].type) + towers[i].upgradeValue) * 3 / 4);
+																			towers.splice(i, 1);
+																		}
+																	}
+																},
+															]));
+														break;
+													}
+													mone -= check(tMouse.tower);
+													tMouse.canPlace = false;
+													tMouse.tower = null;
+												}
+											}
+										} else if (mouseButton === RIGHT) {
+											tMouse.canPlace = false;
+											tMouse.tower = null;
+										}
+									break;
+								}
+							};
+				        	
+				        	keyPressed = function() {
+				        		input[keyCode] = true; // set input[keyCode] to true
+				        	}; // on key down
+				        	keyReleased = function() {
+				        		input[keyCode] = false; // set input[keyCode] to false
+				        	}; // on key up
+				        // }
+    		        }
+    		    };
+		    // }
+		    // store canvas {
+		    	const canvas = document.getElementById("my-canvas");
+		    // }
+		    // run Processing.js {
+		    	const processingInstance = new Processing(canvas, sketchProc);
+		    // }
+		</script>
+    </body>
+</html>
